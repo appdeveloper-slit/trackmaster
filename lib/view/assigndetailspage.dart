@@ -11,14 +11,16 @@ import 'package:trackmaster/utils/colors.dart';
 import 'package:trackmaster/utils/dimension.dart';
 import 'package:trackmaster/utils/styles.dart';
 
-class Homeview extends StatefulWidget {
-  const Homeview({super.key});
+import '../utils/staticmethods.dart';
+
+class assigndetailspage extends StatefulWidget {
+  const assigndetailspage({super.key});
 
   @override
-  State<Homeview> createState() => _HomeviewState();
+  State<assigndetailspage> createState() => _assigndetailspageState();
 }
 
-class _HomeviewState extends State<Homeview> {
+class _assigndetailspageState extends State<assigndetailspage> {
   List nameFiled = [
     'Customer Name:',
     'Mobile Number:',
@@ -50,39 +52,36 @@ class _HomeviewState extends State<Homeview> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      bottomNavigationBar: bottomLayout(0, context),
+       bottomNavigationBar: bottomLayout(1, context),
       appBar: AppBar(
-        leading: Container(),
-        toolbarHeight: 30.0,
         surfaceTintColor: Colors.transparent,
+        backgroundColor: Colors.transparent,
+        shadowColor: Colors.transparent,
+        leading: InkWell(
+            onTap: () {
+              STM().back2Previous(context);
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: SvgPicture.asset(
+                'assets/arrow_left.svg',
+                height: Dim().d24,
+                width: Dim().d24,
+                fit: BoxFit.cover,
+              ),
+            )),
+        title: Text(
+          'Order ID: 2823',
+          style: Sty().mediumtext.copyWith(
+                fontWeight: FontWeight.w600,
+                color: Clr().black1,
+              ),
+        ),
       ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: Dim().d16,
-              ),
-              child: RichText(
-                text: TextSpan(
-                  text: 'Hi,',
-                  style: Sty().mediumtext.copyWith(
-                        color: Clr().black1,
-                        fontWeight: FontWeight.w400,
-                      ),
-                  children: [
-                    TextSpan(
-                      text: ' Diptej Kumar',
-                      style: Sty().mediumtext.copyWith(
-                            color: Clr().Primarycolor,
-                            fontWeight: FontWeight.w600,
-                          ),
-                    )
-                  ],
-                ),
-              ),
-            ),
             Container(
               margin: EdgeInsets.only(top: Dim().d16, bottom: Dim().d12),
               height: Dim().d44,
@@ -241,7 +240,7 @@ class _HomeviewState extends State<Homeview> {
                       Row(
                         children: [
                           SvgPicture.asset(
-                             svgList[3],
+                            svgList[3],
                             height: 18.0,
                             width: 18.0,
                             fit: BoxFit.cover,
@@ -364,11 +363,7 @@ class _HomeviewState extends State<Homeview> {
                           padding: const EdgeInsets.all(8.0),
                           child: SvgPicture.asset(
                             'assets/location.svg',
-                            color: index == 0
-                                ? Clr().iconcolor
-                                : index == 1
-                                    ? Clr().bttnColor
-                                    : Clr().iconClr,
+                            color: Clr().iconClr,
                             height: Dim().d20,
                           ),
                         ),
@@ -379,8 +374,7 @@ class _HomeviewState extends State<Homeview> {
                                 dashLength: 8.0,
                                 dashGap: 2.0,
                                 length: 160,
-                                dashColor:
-                                    index == 0 ? Clr().iconcolor : Clr().dashedclr,
+                                dashColor: Clr().dashedclr,
                               ),
                       ],
                     ),
@@ -427,62 +421,41 @@ class _HomeviewState extends State<Homeview> {
                           ),
                           Align(
                             alignment: Alignment.centerRight,
-                            child: index == 0
-                                ? Container(
-                                    margin: EdgeInsets.only(right: Dim().d16),
-                                    padding: EdgeInsets.symmetric(
-                                        horizontal: Dim().d20, vertical: 10.0),
-                                    decoration: BoxDecoration(
-                                      border: Border.all(
-                                          color: Clr().ConborderClr,
-                                          width: 1.0),
+                            child: Padding(
+                              padding: EdgeInsets.only(right: Dim().d16),
+                              child: SizedBox(
+                                width: Dim().d200,
+                                child: ElevatedButton(
+                                  onPressed: () {},
+                                  style: ElevatedButton.styleFrom(
+                                    elevation: 0,
+                                    padding:
+                                        EdgeInsets.symmetric(vertical: 10.0),
+                                    backgroundColor: index == 0
+                                        ? Clr().bttnColor
+                                        : Clr().bttnColor.withOpacity(0.3),
+                                    shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.all(
                                         Radius.circular(Dim().d12),
                                       ),
                                     ),
-                                    child: Text(
-                                      '24th May 24 / 2:04 PM',
-                                      style: Sty().smalltext.copyWith(
-                                            color: Clr().textClr,
-                                            fontWeight: FontWeight.w400,
-                                          ),
-                                    ),
-                                  )
-                                : Padding(
-                                    padding: EdgeInsets.only(right: Dim().d16),
-                                    child: SizedBox(
-                                      width: Dim().d200,
-                                      child: ElevatedButton(
-                                        onPressed: () {},
-                                        style: ElevatedButton.styleFrom(
-                                          elevation: 0,
-                                          padding: EdgeInsets.symmetric(
-                                              vertical: 10.0),
-                                          backgroundColor: index == 1
-                                              ? Clr().bttnColor
-                                              : Clr()
-                                                  .bttnColor
-                                                  .withOpacity(0.3),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.all(
-                                              Radius.circular(Dim().d12),
-                                            ),
-                                          ),
-                                        ),
-                                        child: Text(
-                                          index == 1
-                                              ? 'Start Ride'
-                                              : index == 2
-                                                  ? 'End Ride'
-                                                  : 'Parked Vehicle',
-                                          style: Sty().smalltext.copyWith(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                        ),
-                                      ),
-                                    ),
                                   ),
+                                  child: Text(
+                                    index == 0
+                                        ? 'Initiate Ride'
+                                        : index == 1
+                                            ? 'Start Ride'
+                                            : index == 2
+                                                ? 'End Ride'
+                                                : 'Parked Vehicle',
+                                    style: Sty().smalltext.copyWith(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
                           SizedBox(
                             height: Dim().d12,

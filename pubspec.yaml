@@ -32,6 +32,8 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.2
   flutter_svg: 
+  timelines: ^0.1.0
+  flutter_dash:
 
 dev_dependencies:
   flutter_test:
