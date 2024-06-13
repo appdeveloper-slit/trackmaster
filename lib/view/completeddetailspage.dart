@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_dash/flutter_dash.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:intl/intl.dart';
 import 'package:timelines/timelines.dart';
 import 'package:trackmaster/utils/colors.dart';
 import 'package:trackmaster/utils/dimension.dart';
@@ -14,7 +15,8 @@ import '../utils/bottomnavigation.dart';
 import '../utils/staticmethods.dart';
 
 class completeddetilspage extends StatefulWidget {
-  const completeddetilspage({super.key});
+  final details;
+  const completeddetilspage({super.key, this.details});
 
   @override
   State<completeddetilspage> createState() => _completeddetilspageState();
@@ -49,6 +51,17 @@ class _completeddetilspageState extends State<completeddetilspage> {
     'Drop Location:',
   ];
 
+  var CustomerDetails;
+  List ongoingRideList = [];
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    CustomerDetails = widget.details;
+    ongoingRideList = widget.details['ride_locations'];
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -71,7 +84,7 @@ class _completeddetilspageState extends State<completeddetilspage> {
               ),
             )),
         title: Text(
-          'Order ID: 2823',
+          'Order ID: ${CustomerDetails['order_id']}',
           style: Sty().mediumtext.copyWith(
                 fontWeight: FontWeight.w600,
                 color: Clr().black1,
@@ -95,14 +108,14 @@ class _completeddetilspageState extends State<completeddetilspage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Order ID: 2823',
+                        'Order ID: ${CustomerDetails['order_id']}',
                         style: Sty().smalltext.copyWith(
                               color: Clr().iconcolor,
                               fontWeight: FontWeight.w400,
                             ),
                       ),
                       Text(
-                        '24th May 24 / 2:04 PM',
+                        '${DateFormat('dd MMM yy').format(DateTime.parse('${CustomerDetails['ride_date']} ${CustomerDetails['ride_time']}'))} / ${DateFormat('hh:mm a').format(DateTime.parse('${CustomerDetails['ride_date']} ${CustomerDetails['ride_time']}'))}',
                         style: Sty().microText.copyWith(
                               color: Clr().iconcolor,
                               fontWeight: FontWeight.w400,
@@ -146,7 +159,7 @@ class _completeddetilspageState extends State<completeddetilspage> {
                                 height: Dim().d2,
                               ),
                               Text(
-                                ansfiled[0],
+                                CustomerDetails['customer_name'],
                                 style: Sty().microText.copyWith(
                                       color: Clr().charcole,
                                       fontWeight: FontWeight.w500,
@@ -184,7 +197,7 @@ class _completeddetilspageState extends State<completeddetilspage> {
                                 height: Dim().d2,
                               ),
                               Text(
-                                ansfiled[2],
+                                CustomerDetails['car_model'],
                                 style: Sty().microText.copyWith(
                                       color: Clr().charcole,
                                       fontWeight: FontWeight.w500,
@@ -224,7 +237,7 @@ class _completeddetilspageState extends State<completeddetilspage> {
                                 height: Dim().d2,
                               ),
                               Text(
-                                ansfiled[1],
+                                CustomerDetails['customer_mobile'],
                                 style: Sty().microText.copyWith(
                                       color: Clr().charcole,
                                       fontWeight: FontWeight.w500,
@@ -262,7 +275,7 @@ class _completeddetilspageState extends State<completeddetilspage> {
                                 height: Dim().d2,
                               ),
                               Text(
-                                ansfiled[3],
+                                CustomerDetails['car_plate_number'],
                                 style: Sty().microText.copyWith(
                                       color: Clr().charcole,
                                       fontWeight: FontWeight.w500,
@@ -280,7 +293,7 @@ class _completeddetilspageState extends State<completeddetilspage> {
             SizedBox(
               height: Dim().d20,
             ),
-            
+
             Padding(
               padding: EdgeInsets.symmetric(horizontal: Dim().d16),
               child: Row(
@@ -294,7 +307,7 @@ class _completeddetilspageState extends State<completeddetilspage> {
                           ),
                       children: [
                         TextSpan(
-                          text: ' (One-way)',
+                          text: ' (${CustomerDetails['ride_type']})',
                           style: Sty().mediumtext.copyWith(
                                 color: Clr().royalblue,
                                 fontWeight: FontWeight.w400,
@@ -316,7 +329,7 @@ class _completeddetilspageState extends State<completeddetilspage> {
               ),
             ),
             ListView.builder(
-              itemCount: namelist.length,
+              itemCount: ongoingRideList.length,
               shrinkWrap: true,
               controller: ScrollController(),
               itemBuilder: (context, index) {
@@ -334,7 +347,7 @@ class _completeddetilspageState extends State<completeddetilspage> {
                             height: Dim().d20,
                           ),
                         ),
-                        index == namelist.length - 1
+                        index == ongoingRideList.length - 1
                             ? Container()
                             : Dash(
                                 direction: Axis.vertical,
@@ -354,7 +367,7 @@ class _completeddetilspageState extends State<completeddetilspage> {
                             height: Dim().d8,
                           ),
                           Text(
-                            namelist[index],
+                            ongoingRideList[index]['location_type'],
                             style: Sty().smalltext.copyWith(
                                   color: Clr().slategrey,
                                   fontWeight: FontWeight.w400,
@@ -367,7 +380,7 @@ class _completeddetilspageState extends State<completeddetilspage> {
                             children: [
                               Expanded(
                                 child: Text(
-                                  'Parking Lot Location: 1234, Shivaji Marg, Andheri West, Mumbai, Maharashtra, 400053, India',
+                                  ongoingRideList[index]['address'],
                                   style: Sty().smalltext.copyWith(
                                         color: Clr().charcole,
                                         fontWeight: FontWeight.w400,
@@ -402,7 +415,7 @@ class _completeddetilspageState extends State<completeddetilspage> {
                                     ),
                                   ),
                                   child: Text(
-                                    '24th May 24 / 2:04 PM',
+                                    '${DateFormat('dd MMM yy').format(DateTime.parse('${ongoingRideList[index]['date']} ${ongoingRideList[index]['time']}'))} / ${DateFormat('hh:mm a').format(DateTime.parse('${ongoingRideList[index]['date']} ${ongoingRideList[index]['time']}'))}',
                                     style: Sty().smalltext.copyWith(
                                           color: Clr().textClr,
                                           fontWeight: FontWeight.w400,
@@ -413,7 +426,7 @@ class _completeddetilspageState extends State<completeddetilspage> {
                           SizedBox(
                             height: Dim().d12,
                           ),
-                          index == namelist.length - 1
+                          index == ongoingRideList.length - 1
                               ? Container()
                               : Padding(
                                   padding: EdgeInsets.only(right: Dim().d16),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:trackmaster/utils/colors.dart';
 import 'package:trackmaster/utils/dimension.dart';
 import 'package:trackmaster/utils/staticmethods.dart';
@@ -7,6 +9,7 @@ import 'package:trackmaster/utils/styles.dart';
 import 'package:trackmaster/view/assigndetailspage.dart';
 
 import '../utils/bottomnavigation.dart';
+import '../viewmodel/apimodel.dart';
 
 class assignpage extends StatefulWidget {
   const assignpage({super.key});
@@ -36,9 +39,22 @@ class _assignpageState extends State<assignpage> {
     'Maruti Suzuki Ertiga',
     'MH04 JM6272',
   ];
+  late BuildContext ctx;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<userViewModel>(context, listen: false)
+          .getAssData(ctx: ctx, setState: setState);
+    });
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
+    ctx = context;
+    final usermodel = Provider.of<userViewModel>(context);
     return Scaffold(
       bottomNavigationBar: bottomLayout(1, context),
       appBar: AppBar(
@@ -69,248 +85,271 @@ class _assignpageState extends State<assignpage> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            ListView.builder(
-              itemCount: 4,
-              shrinkWrap: true,
-              physics: ScrollPhysics(),
-              controller: ScrollController(),
-              itemBuilder: (context, index) {
-                return Column(
-                  children: [
-                    Container(
-                      margin:
-                          EdgeInsets.only(top: Dim().d16, bottom: Dim().d12),
-                      height: Dim().d44,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Clr().lightblue,
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: Dim().d16),
-                        child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Order ID: 2823',
-                                style: Sty().smalltext.copyWith(
-                                      color: Clr().royalblue,
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                              ),
-                              Text(
-                                '24th May 24 / 2:04 PM',
-                                style: Sty().microText.copyWith(
-                                      color: Clr().steelblue,
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                              )
-                            ]),
+            usermodel.assignRidesList.isEmpty
+                ? SizedBox(
+                    height: MediaQuery.of(ctx).size.height / 1.3,
+                    child: Center(
+                      child: Text(
+                        'No Assign Rides',
+                        style: Sty().mediumtext.copyWith(color: Clr().black1),
                       ),
                     ),
-                    Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: Dim().d16,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  )
+                : ListView.builder(
+                    itemCount: usermodel.assignRidesList.length,
+                    shrinkWrap: true,
+                    physics: ScrollPhysics(),
+                    controller: ScrollController(),
+                    itemBuilder: (context, index) {
+                      var details = usermodel.assignRidesList[index];
+                      return Column(
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  SvgPicture.asset(
-                                    svgList[0],
-                                    height: 18.0,
-                                    width: 18.0,
-                                    fit: BoxFit.cover,
-                                  ),
-                                  SizedBox(
-                                    width: Dim().d6,
-                                  ),
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        nameFiled[0],
-                                        style: Sty().microText.copyWith(
-                                            color: Clr().slategrey,
-                                            fontWeight: FontWeight.w400),
-                                      ),
-                                      SizedBox(
-                                        height: Dim().d2,
-                                      ),
-                                      Text(
-                                        ansfiled[0],
-                                        style: Sty().microText.copyWith(
-                                              color: Clr().charcole,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                      )
-                                    ],
-                                  )
-                                ],
-                              ),
-                              SizedBox(
-                                height: Dim().d12,
-                              ),
-                              Row(
-                                children: [
-                                  SvgPicture.asset(
-                                    svgList[2],
-                                    height: 18.0,
-                                    width: 18.0,
-                                    fit: BoxFit.cover,
-                                  ),
-                                  SizedBox(
-                                    width: Dim().d6,
-                                  ),
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        nameFiled[2],
-                                        style: Sty().microText.copyWith(
-                                            color: Clr().slategrey,
-                                            fontWeight: FontWeight.w400),
-                                      ),
-                                      SizedBox(
-                                        height: Dim().d2,
-                                      ),
-                                      Text(
-                                        ansfiled[2],
-                                        style: Sty().microText.copyWith(
-                                              color: Clr().charcole,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                      )
-                                    ],
-                                  )
-                                ],
-                              )
-                            ],
+                          Container(
+                            margin: EdgeInsets.only(
+                                top: Dim().d16, bottom: Dim().d12),
+                            height: Dim().d44,
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: Clr().lightblue,
+                            ),
+                            child: Padding(
+                              padding:
+                                  EdgeInsets.symmetric(horizontal: Dim().d16),
+                              child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'Order ID: ${details['order_id']}',
+                                      style: Sty().smalltext.copyWith(
+                                            color: Clr().royalblue,
+                                            fontWeight: FontWeight.w400,
+                                          ),
+                                    ),
+                                    Text(
+                                      '${DateFormat('dd MMM yy').format(DateTime.parse('${details['ride_date']} ${details['ride_time']}'))} / ${DateFormat('hh:mm a').format(DateTime.parse('${details['ride_date']} ${details['ride_time']}'))}',
+                                      style: Sty().microText.copyWith(
+                                            color: Clr().steelblue,
+                                            fontWeight: FontWeight.w400,
+                                          ),
+                                    )
+                                  ]),
+                            ),
                           ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  SvgPicture.asset(
-                                    svgList[1],
-                                    height: 18.0,
-                                    width: 18.0,
-                                    fit: BoxFit.cover,
-                                  ),
-                                  SizedBox(
-                                    width: Dim().d6,
-                                  ),
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        nameFiled[1],
-                                        style: Sty().microText.copyWith(
-                                            color: Clr().slategrey,
-                                            fontWeight: FontWeight.w400),
-                                      ),
-                                      SizedBox(
-                                        height: Dim().d2,
-                                      ),
-                                      Text(
-                                        ansfiled[1],
-                                        style: Sty().microText.copyWith(
-                                              color: Clr().charcole,
-                                              fontWeight: FontWeight.w500,
+                          Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: Dim().d16,
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        SvgPicture.asset(
+                                          svgList[0],
+                                          height: 18.0,
+                                          width: 18.0,
+                                          fit: BoxFit.cover,
+                                        ),
+                                        SizedBox(
+                                          width: Dim().d6,
+                                        ),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              nameFiled[0],
+                                              style: Sty().microText.copyWith(
+                                                  color: Clr().slategrey,
+                                                  fontWeight: FontWeight.w400),
                                             ),
-                                      )
-                                    ],
-                                  )
-                                ],
-                              ),
-                              SizedBox(
-                                height: Dim().d12,
-                              ),
-                              Row(
-                                children: [
-                                  SvgPicture.asset(
-                                    svgList[3],
-                                    height: 18.0,
-                                    width: 18.0,
-                                    fit: BoxFit.cover,
-                                  ),
-                                  SizedBox(
-                                    width: Dim().d6,
-                                  ),
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        nameFiled[3],
-                                        style: Sty().microText.copyWith(
-                                            color: Clr().slategrey,
-                                            fontWeight: FontWeight.w400),
-                                      ),
-                                      SizedBox(
-                                        height: Dim().d2,
-                                      ),
-                                      Text(
-                                        ansfiled[3],
-                                        style: Sty().microText.copyWith(
-                                              color: Clr().charcole,
-                                              fontWeight: FontWeight.w500,
+                                            SizedBox(
+                                              height: Dim().d2,
                                             ),
-                                      )
-                                    ],
-                                  )
-                                ],
-                              )
-                            ],
-                          )
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      height: Dim().d20,
-                    ),
-                    InkWell(
-                      onTap: (){
-                        STM().redirect2page(context, const assigndetailspage());
-                      },
-                      child: Container(
-                        margin: EdgeInsets.symmetric(horizontal: Dim().d16),
-                        height: 48.0,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Clr().jordyblue, width: 1.0),
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(Dim().d12),
-                          ),
-                        ),
-                        child: Center(
-                          child: Text(
-                            'View Details',
-                            style: Sty().smalltext.copyWith(
-                                  fontWeight: FontWeight.w400,
-                                  color: Clr().royalblue,
+                                            Text(
+                                              details['customer_name'],
+                                              style: Sty().microText.copyWith(
+                                                    color: Clr().charcole,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                            )
+                                          ],
+                                        )
+                                      ],
+                                    ),
+                                    SizedBox(
+                                      height: Dim().d12,
+                                    ),
+                                    Row(
+                                      children: [
+                                        SvgPicture.asset(
+                                          svgList[2],
+                                          height: 18.0,
+                                          width: 18.0,
+                                          fit: BoxFit.cover,
+                                        ),
+                                        SizedBox(
+                                          width: Dim().d6,
+                                        ),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              nameFiled[2],
+                                              style: Sty().microText.copyWith(
+                                                  color: Clr().slategrey,
+                                                  fontWeight: FontWeight.w400),
+                                            ),
+                                            SizedBox(
+                                              height: Dim().d2,
+                                            ),
+                                            Text(
+                                              details['car_model'],
+                                              style: Sty().microText.copyWith(
+                                                    color: Clr().charcole,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                            )
+                                          ],
+                                        )
+                                      ],
+                                    )
+                                  ],
                                 ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        SvgPicture.asset(
+                                          svgList[1],
+                                          height: 18.0,
+                                          width: 18.0,
+                                          fit: BoxFit.cover,
+                                        ),
+                                        SizedBox(
+                                          width: Dim().d6,
+                                        ),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              nameFiled[1],
+                                              style: Sty().microText.copyWith(
+                                                  color: Clr().slategrey,
+                                                  fontWeight: FontWeight.w400),
+                                            ),
+                                            SizedBox(
+                                              height: Dim().d2,
+                                            ),
+                                            Text(
+                                              details['customer_mobile'],
+                                              style: Sty().microText.copyWith(
+                                                    color: Clr().charcole,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                            )
+                                          ],
+                                        )
+                                      ],
+                                    ),
+                                    SizedBox(
+                                      height: Dim().d12,
+                                    ),
+                                    Row(
+                                      children: [
+                                        SvgPicture.asset(
+                                          svgList[3],
+                                          height: 18.0,
+                                          width: 18.0,
+                                          fit: BoxFit.cover,
+                                        ),
+                                        SizedBox(
+                                          width: Dim().d6,
+                                        ),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              nameFiled[3],
+                                              style: Sty().microText.copyWith(
+                                                  color: Clr().slategrey,
+                                                  fontWeight: FontWeight.w400),
+                                            ),
+                                            SizedBox(
+                                              height: Dim().d2,
+                                            ),
+                                            Text(
+                                              details['car_plate_number'],
+                                              style: Sty().microText.copyWith(
+                                                    color: Clr().charcole,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                            )
+                                          ],
+                                        )
+                                      ],
+                                    )
+                                  ],
+                                )
+                              ],
+                            ),
                           ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      height: Dim().d12,
-                    ),
-                  ],
-                );
-              },
-            )
+                          SizedBox(
+                            height: Dim().d20,
+                          ),
+                          InkWell(
+                            onTap: () {
+                              STM().redirect2page(
+                                  context,
+                                  assigndetailspage(
+                                    details: details,
+                                  ));
+                            },
+                            child: Container(
+                              margin:
+                                  EdgeInsets.symmetric(horizontal: Dim().d16),
+                              height: 48.0,
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: Clr().jordyblue, width: 1.0),
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(Dim().d12),
+                                ),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  'View Details',
+                                  style: Sty().smalltext.copyWith(
+                                        fontWeight: FontWeight.w400,
+                                        color: Clr().royalblue,
+                                      ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            height: Dim().d12,
+                          ),
+                        ],
+                      );
+                    },
+                  )
           ],
         ),
       ),

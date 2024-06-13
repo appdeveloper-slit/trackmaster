@@ -34,6 +34,14 @@ dependencies:
   flutter_svg: 
   timelines: ^0.1.0
   flutter_dash:
+  provider: 
+  http:
+  awesome_dialog: 
+  fluttertoast: 
+  shared_preferences: 
+  intl: 
+  url_launcher: 
+  map_launcher: 
 
 dev_dependencies:
   flutter_test:

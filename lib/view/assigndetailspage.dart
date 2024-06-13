@@ -5,16 +5,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_dash/flutter_dash.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:timelines/timelines.dart';
 import 'package:trackmaster/utils/bottomnavigation.dart';
 import 'package:trackmaster/utils/colors.dart';
 import 'package:trackmaster/utils/dimension.dart';
 import 'package:trackmaster/utils/styles.dart';
+import 'package:trackmaster/viewmodel/apimodel.dart';
 
 import '../utils/staticmethods.dart';
 
 class assigndetailspage extends StatefulWidget {
-  const assigndetailspage({super.key});
+  final details;
+  const assigndetailspage({super.key, this.details});
 
   @override
   State<assigndetailspage> createState() => _assigndetailspageState();
@@ -49,10 +53,24 @@ class _assigndetailspageState extends State<assigndetailspage> {
     'Drop Location:',
   ];
 
+  var CustomerDetails;
+  List ongoingRideList = [];
+  late BuildContext ctx;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    CustomerDetails = widget.details;
+    ongoingRideList = widget.details['ride_locations'];
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
+    ctx = context;
+    final usermodel = Provider.of<userViewModel>(context);
     return Scaffold(
-       bottomNavigationBar: bottomLayout(1, context),
+      bottomNavigationBar: bottomLayout(1, context),
       appBar: AppBar(
         surfaceTintColor: Colors.transparent,
         backgroundColor: Colors.transparent,
@@ -71,7 +89,7 @@ class _assigndetailspageState extends State<assigndetailspage> {
               ),
             )),
         title: Text(
-          'Order ID: 2823',
+          'Order ID: ${CustomerDetails['order_id']}',
           style: Sty().mediumtext.copyWith(
                 fontWeight: FontWeight.w600,
                 color: Clr().black1,
@@ -95,14 +113,14 @@ class _assigndetailspageState extends State<assigndetailspage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Order ID: 2823',
+                        'Order ID: ${CustomerDetails['order_id']}',
                         style: Sty().smalltext.copyWith(
                               color: Clr().royalblue,
                               fontWeight: FontWeight.w400,
                             ),
                       ),
                       Text(
-                        '24th May 24 / 2:04 PM',
+                        '${DateFormat('dd MMM yy').format(DateTime.parse('${CustomerDetails['ride_date']} ${CustomerDetails['ride_time']}'))} / ${DateFormat('hh:mm a').format(DateTime.parse('${CustomerDetails['ride_date']} ${CustomerDetails['ride_time']}'))}',
                         style: Sty().microText.copyWith(
                               color: Clr().steelblue,
                               fontWeight: FontWeight.w400,
@@ -146,7 +164,7 @@ class _assigndetailspageState extends State<assigndetailspage> {
                                 height: Dim().d2,
                               ),
                               Text(
-                                ansfiled[0],
+                                CustomerDetails['customer_name'],
                                 style: Sty().microText.copyWith(
                                       color: Clr().charcole,
                                       fontWeight: FontWeight.w500,
@@ -184,7 +202,7 @@ class _assigndetailspageState extends State<assigndetailspage> {
                                 height: Dim().d2,
                               ),
                               Text(
-                                ansfiled[2],
+                                CustomerDetails['car_model'],
                                 style: Sty().microText.copyWith(
                                       color: Clr().charcole,
                                       fontWeight: FontWeight.w500,
@@ -224,7 +242,7 @@ class _assigndetailspageState extends State<assigndetailspage> {
                                 height: Dim().d2,
                               ),
                               Text(
-                                ansfiled[1],
+                                CustomerDetails['customer_mobile'],
                                 style: Sty().microText.copyWith(
                                       color: Clr().charcole,
                                       fontWeight: FontWeight.w500,
@@ -262,7 +280,7 @@ class _assigndetailspageState extends State<assigndetailspage> {
                                 height: Dim().d2,
                               ),
                               Text(
-                                ansfiled[3],
+                                CustomerDetails['car_plate_number'],
                                 style: Sty().microText.copyWith(
                                       color: Clr().charcole,
                                       fontWeight: FontWeight.w500,
@@ -295,17 +313,22 @@ class _assigndetailspageState extends State<assigndetailspage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Customer No.: +91 8943823922',
+                      'Customer No.: ${CustomerDetails['customer_mobile']}',
                       style: Sty().smalltext.copyWith(
                             fontWeight: FontWeight.w400,
                             color: Clr().royalblue,
                           ),
                     ),
-                    SvgPicture.asset(
-                      'assets/bluecall.svg',
-                      height: Dim().d32,
-                      width: Dim().d32,
-                      fit: BoxFit.cover,
+                    InkWell(
+                      onTap: () {
+                        STM().openDialer(CustomerDetails['customer_mobile']);
+                      },
+                      child: SvgPicture.asset(
+                        'assets/bluecall.svg',
+                        height: Dim().d32,
+                        width: Dim().d32,
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ],
                 ),
@@ -327,7 +350,7 @@ class _assigndetailspageState extends State<assigndetailspage> {
                           ),
                       children: [
                         TextSpan(
-                          text: ' (One-way)',
+                          text: ' (${CustomerDetails['ride_type']})',
                           style: Sty().mediumtext.copyWith(
                                 color: Clr().royalblue,
                                 fontWeight: FontWeight.w400,
@@ -349,7 +372,7 @@ class _assigndetailspageState extends State<assigndetailspage> {
               ),
             ),
             ListView.builder(
-              itemCount: namelist.length,
+              itemCount: ongoingRideList.length,
               shrinkWrap: true,
               controller: ScrollController(),
               itemBuilder: (context, index) {
@@ -363,18 +386,27 @@ class _assigndetailspageState extends State<assigndetailspage> {
                           padding: const EdgeInsets.all(8.0),
                           child: SvgPicture.asset(
                             'assets/location.svg',
-                            color: Clr().iconClr,
+                            color: index == 0
+                                ? ongoingRideList[0]['date'] != null
+                                    ? Clr().iconcolor
+                                    : Clr().bttnColor
+                                : ongoingRideList[index - 1]['date'] != null
+                                    ? Clr().bttnColor
+                                    : Clr().iconClr,
                             height: Dim().d20,
                           ),
                         ),
-                        index == namelist.length - 1
+                        index == ongoingRideList.length - 1
                             ? Container()
                             : Dash(
                                 direction: Axis.vertical,
                                 dashLength: 8.0,
                                 dashGap: 2.0,
                                 length: 160,
-                                dashColor: Clr().dashedclr,
+                                dashColor:
+                                    ongoingRideList[index]['date'] != null
+                                        ? Clr().iconcolor
+                                        : Clr().dashedclr,
                               ),
                       ],
                     ),
@@ -387,7 +419,7 @@ class _assigndetailspageState extends State<assigndetailspage> {
                             height: Dim().d8,
                           ),
                           Text(
-                            namelist[index],
+                            ongoingRideList[index]['location_type'],
                             style: Sty().smalltext.copyWith(
                                   color: Clr().slategrey,
                                   fontWeight: FontWeight.w400,
@@ -400,7 +432,7 @@ class _assigndetailspageState extends State<assigndetailspage> {
                             children: [
                               Expanded(
                                 child: Text(
-                                  'Parking Lot Location: 1234, Shivaji Marg, Andheri West, Mumbai, Maharashtra, 400053, India',
+                                  ongoingRideList[index]['address'],
                                   style: Sty().smalltext.copyWith(
                                         color: Clr().charcole,
                                         fontWeight: FontWeight.w400,
@@ -410,7 +442,16 @@ class _assigndetailspageState extends State<assigndetailspage> {
                               SizedBox(
                                 width: Dim().d16,
                               ),
-                              SvgPicture.asset('assets/share.svg'),
+                              InkWell(
+                                  onTap: () {
+                                    STM().openMap(
+                                      double.parse(
+                                          ongoingRideList[index]['latitude']),
+                                      double.parse(
+                                          ongoingRideList[index]['longitude']),
+                                    );
+                                  },
+                                  child: SvgPicture.asset('assets/share.svg')),
                               SizedBox(
                                 width: Dim().d16,
                               ),
@@ -421,46 +462,106 @@ class _assigndetailspageState extends State<assigndetailspage> {
                           ),
                           Align(
                             alignment: Alignment.centerRight,
-                            child: Padding(
-                              padding: EdgeInsets.only(right: Dim().d16),
-                              child: SizedBox(
-                                width: Dim().d200,
-                                child: ElevatedButton(
-                                  onPressed: () {},
-                                  style: ElevatedButton.styleFrom(
-                                    elevation: 0,
-                                    padding:
-                                        EdgeInsets.symmetric(vertical: 10.0),
-                                    backgroundColor: index == 0
-                                        ? Clr().bttnColor
-                                        : Clr().bttnColor.withOpacity(0.3),
-                                    shape: RoundedRectangleBorder(
+                            child: ongoingRideList[index]['date'] != null
+                                ? Container(
+                                    margin: EdgeInsets.only(right: Dim().d16),
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: Dim().d20, vertical: 10.0),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                          color: Clr().ConborderClr,
+                                          width: 1.0),
                                       borderRadius: BorderRadius.all(
                                         Radius.circular(Dim().d12),
                                       ),
                                     ),
-                                  ),
-                                  child: Text(
-                                    index == 0
-                                        ? 'Initiate Ride'
-                                        : index == 1
-                                            ? 'Start Ride'
-                                            : index == 2
-                                                ? 'End Ride'
-                                                : 'Parked Vehicle',
-                                    style: Sty().smalltext.copyWith(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w600,
+                                    child: Text(
+                                      '${DateFormat('dd MMM yy').format(DateTime.parse('${ongoingRideList[index]['date']} ${ongoingRideList[index]['time']}'))} / ${DateFormat('hh:mm a').format(DateTime.parse('${ongoingRideList[index]['date']} ${ongoingRideList[index]['time']}'))}',
+                                      style: Sty().smalltext.copyWith(
+                                            color: Clr().textClr,
+                                            fontWeight: FontWeight.w400,
+                                          ),
+                                    ),
+                                  )
+                                : Padding(
+                                    padding: EdgeInsets.only(right: Dim().d16),
+                                    child: SizedBox(
+                                      width: Dim().d200,
+                                      child: ElevatedButton(
+                                        onPressed: () {
+                                          index == 0
+                                              ? usermodel.updateStatus(
+                                                  type: 'assign',
+                                                  ctx,
+                                                  setState,
+                                                  {
+                                                    "ride_location_id":
+                                                        ongoingRideList[index]
+                                                            ['id'],
+                                                    "latitude":
+                                                        ongoingRideList[index]
+                                                            ['latitude'],
+                                                    "longitude":
+                                                        ongoingRideList[index]
+                                                            ['longitude']
+                                                  },
+                                                )
+                                              : ongoingRideList[index - 1]
+                                                          ['date'] !=
+                                                      null
+                                                  ? usermodel.updateStatus(
+                                                      ctx,
+                                                      setState,
+                                                      {
+                                                        "ride_location_id":
+                                                            ongoingRideList[
+                                                                index]['id'],
+                                                        "latitude":
+                                                            ongoingRideList[
+                                                                    index]
+                                                                ['latitude'],
+                                                        "longitude":
+                                                            ongoingRideList[
+                                                                    index]
+                                                                ['longitude']
+                                                      },
+                                                    )
+                                                  : null;
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          elevation: 0,
+                                          padding: EdgeInsets.symmetric(
+                                              vertical: 10.0),
+                                          backgroundColor: index == 0
+                                              ? Clr().bttnColor
+                                              : ongoingRideList[index - 1]
+                                                          ['date'] !=
+                                                      null
+                                                  ? Clr().bttnColor
+                                                  : Clr()
+                                                      .bttnColor
+                                                      .withOpacity(0.3),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.all(
+                                              Radius.circular(Dim().d12),
+                                            ),
+                                          ),
                                         ),
+                                        child: Text(
+                                          ongoingRideList[index]['ride_status'],
+                                          style: Sty().smalltext.copyWith(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                        ),
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              ),
-                            ),
                           ),
                           SizedBox(
                             height: Dim().d12,
                           ),
-                          index == namelist.length - 1
+                          index == ongoingRideList.length - 1
                               ? Container()
                               : Padding(
                                   padding: EdgeInsets.only(right: Dim().d16),
