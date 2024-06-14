@@ -7,6 +7,8 @@ import 'package:trackmaster/services/apifile.dart';
 import 'package:trackmaster/utils/staticmethods.dart';
 import 'package:trackmaster/view/homepage.dart';
 
+import '../view/completedrides.dart';
+
 class userViewModel extends ChangeNotifier {
   final apiServices ser = apiServices();
   bool loading = false;
@@ -33,6 +35,7 @@ class userViewModel extends ChangeNotifier {
         loading = false;
         notifyListeners();
         sp.setString('token', result['data']['token']);
+        sp.setString('name', result['data']['user']['name']);
         sp.setBool('login', true);
         Fluttertoast.showToast(msg: result['message']);
         STM().finishAffinity(ctx, Homeview());
@@ -132,7 +135,12 @@ class userViewModel extends ChangeNotifier {
     if (result['success'] == true) {
       loading = false;
       getData(ctx: ctx, setState: setState);
-      type == 'assign' ? STM().finishAffinity(ctx, Homeview()) : null;
+      type == 'assign'
+          ? STM().finishAffinity(ctx, Homeview())
+          : type == 'last'
+              ? STM().redirect2page(ctx, completedrides())
+              : null;
+      type == 'last' ? Fluttertoast.showToast(msg: 'Ride Completed') : null;
       notifyListeners();
     } else {
       loading = false;

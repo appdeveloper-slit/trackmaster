@@ -483,80 +483,131 @@ class _assigndetailspageState extends State<assigndetailspage> {
                                           ),
                                     ),
                                   )
-                                : Padding(
-                                    padding: EdgeInsets.only(right: Dim().d16),
-                                    child: SizedBox(
-                                      width: Dim().d200,
-                                      child: ElevatedButton(
-                                        onPressed: () {
-                                          index == 0
-                                              ? usermodel.updateStatus(
-                                                  type: 'assign',
-                                                  ctx,
-                                                  setState,
-                                                  {
-                                                    "ride_location_id":
-                                                        ongoingRideList[index]
-                                                            ['id'],
-                                                    "latitude":
-                                                        ongoingRideList[index]
-                                                            ['latitude'],
-                                                    "longitude":
-                                                        ongoingRideList[index]
-                                                            ['longitude']
-                                                  },
-                                                )
-                                              : ongoingRideList[index - 1]
-                                                          ['date'] !=
-                                                      null
-                                                  ? usermodel.updateStatus(
-                                                      ctx,
-                                                      setState,
-                                                      {
-                                                        "ride_location_id":
-                                                            ongoingRideList[
-                                                                index]['id'],
-                                                        "latitude":
-                                                            ongoingRideList[
-                                                                    index]
-                                                                ['latitude'],
-                                                        "longitude":
-                                                            ongoingRideList[
-                                                                    index]
-                                                                ['longitude']
+                                : usermodel.loading
+                                    ? index == 0
+                                        ? Center(
+                                            child: CircularProgressIndicator())
+                                        : null
+                                    : Padding(
+                                        padding:
+                                            EdgeInsets.only(right: Dim().d16),
+                                        child: SizedBox(
+                                          width: Dim().d200,
+                                          child: ElevatedButton(
+                                            onPressed: () {
+                                              index == 0
+                                                  ? showDialog(
+                                                      context: ctx,
+                                                      builder: (context) {
+                                                        return AlertDialog(
+                                                          backgroundColor:
+                                                              Colors.white,
+                                                          elevation: 0,
+                                                          title: Text(
+                                                            "Confirmation",
+                                                            style: Sty()
+                                                                .largetext
+                                                                .copyWith(
+                                                                  color: Colors
+                                                                      .red,
+                                                                ),
+                                                          ),
+                                                          content: Text(
+                                                            "Are you sure you want to start a ride?",
+                                                            style:
+                                                                Sty().smalltext,
+                                                          ),
+                                                          actions: [
+                                                            TextButton(
+                                                              onPressed: () {
+                                                                STM()
+                                                                    .checkInternet(
+                                                                        context,
+                                                                        widget)
+                                                                    .then(
+                                                                        (value) {
+                                                                  if (value) {
+                                                                    usermodel
+                                                                        .updateStatus(
+                                                                      type:
+                                                                          'assign',
+                                                                      ctx,
+                                                                      setState,
+                                                                      {
+                                                                        "ride_location_id":
+                                                                            ongoingRideList[index]['id'],
+                                                                        "latitude":
+                                                                            ongoingRideList[index]['latitude'],
+                                                                        "longitude":
+                                                                            ongoingRideList[index]['longitude']
+                                                                      },
+                                                                    );
+                                                                  }
+                                                                });
+                                                                STM()
+                                                                    .back2Previous(
+                                                                        ctx);
+                                                              },
+                                                              child: Text(
+                                                                "Yes",
+                                                                style: Sty()
+                                                                    .smalltext
+                                                                    .copyWith(
+                                                                        fontWeight:
+                                                                            FontWeight.w700),
+                                                              ),
+                                                            ),
+                                                            TextButton(
+                                                              onPressed: () {
+                                                                STM()
+                                                                    .back2Previous(
+                                                                        ctx);
+                                                              },
+                                                              child: Text(
+                                                                "No",
+                                                                style: Sty()
+                                                                    .smalltext
+                                                                    .copyWith(
+                                                                        fontWeight:
+                                                                            FontWeight.w700),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        );
                                                       },
                                                     )
-                                                  : null;
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                          elevation: 0,
-                                          padding: EdgeInsets.symmetric(
-                                              vertical: 10.0),
-                                          backgroundColor: index == 0
-                                              ? Clr().bttnColor
-                                              : ongoingRideList[index - 1]
-                                                          ['date'] !=
-                                                      null
+                                                  : Container();
+                                            },
+                                            style: ElevatedButton.styleFrom(
+                                              elevation: 0,
+                                              padding: EdgeInsets.symmetric(
+                                                  vertical: 10.0),
+                                              backgroundColor: index == 0
                                                   ? Clr().bttnColor
-                                                  : Clr()
-                                                      .bttnColor
-                                                      .withOpacity(0.3),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.all(
-                                              Radius.circular(Dim().d12),
+                                                  : ongoingRideList[index - 1]
+                                                              ['date'] !=
+                                                          null
+                                                      ? Clr().bttnColor
+                                                      : Clr()
+                                                          .bttnColor
+                                                          .withOpacity(0.3),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.all(
+                                                  Radius.circular(Dim().d12),
+                                                ),
+                                              ),
+                                            ),
+                                            child: Text(
+                                              ongoingRideList[index]
+                                                  ['ride_status'],
+                                              style: Sty().smalltext.copyWith(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
                                             ),
                                           ),
                                         ),
-                                        child: Text(
-                                          ongoingRideList[index]['ride_status'],
-                                          style: Sty().smalltext.copyWith(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                        ),
                                       ),
-                                    ),
-                                  ),
                           ),
                           SizedBox(
                             height: Dim().d12,

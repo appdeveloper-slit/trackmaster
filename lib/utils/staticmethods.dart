@@ -1,10 +1,12 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:trackmaster/utils/colors.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'dimension.dart';
+import 'styles.dart';
 
 class STM {
   void redirect2page(BuildContext context, Widget widget) {
@@ -21,6 +23,77 @@ class STM {
         builder: (BuildContext context) => widget,
       ),
     );
+  }
+
+  Future<bool> checkInternet(context, widget) async {
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult.contains(ConnectivityResult.mobile)) {
+      return true;
+    } else if (connectivityResult.contains(ConnectivityResult.wifi)) {
+      return true;
+    } else {
+      internetAlert(context, widget);
+      return false;
+    }
+  }
+
+  internetAlert(context, widget) {
+    AwesomeDialog(
+      context: context,
+      dialogType: DialogType.noHeader,
+      animType: AnimType.scale,
+      dismissOnTouchOutside: false,
+      dismissOnBackKeyPress: false,
+      body: Padding(
+        padding: EdgeInsets.all(Dim().d20),
+        child: Column(
+          children: [
+            // SizedBox(child: Lottie.asset('assets/no_internet_alert.json')),
+            Text(
+              'Connection Error',
+              style: Sty().largetext.copyWith(
+                    color: Clr().Primarycolor,
+                    fontSize: 18.0,
+                  ),
+            ),
+            SizedBox(
+              height: Dim().d8,
+            ),
+            Text(
+              'No Internet connection found.',
+              style: Sty().smalltext,
+            ),
+            SizedBox(
+              height: Dim().d32,
+            ),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Clr().Primarycolor,
+                ),
+                onPressed: () async {
+                  var connectivityResult =
+                      await (Connectivity().checkConnectivity());
+                  if (connectivityResult.contains(ConnectivityResult.mobile) ||
+                      connectivityResult.contains(ConnectivityResult.wifi)) {
+                    Navigator.pop(context);
+                    STM().replacePage(context, widget);
+                  }
+                },
+                child: Text(
+                  "Try Again",
+                  style: Sty().largetext.copyWith(
+                        color: Colors.white,
+                      ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ).show();
   }
 
   void back2Previous(BuildContext context) {

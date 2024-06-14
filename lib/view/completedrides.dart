@@ -45,8 +45,12 @@ class _completedridesState extends State<completedrides> {
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<userViewModel>(context, listen: false)
-          .getCompData(ctx: ctx, setState: setState);
+      STM().checkInternet(context, widget).then((value) {
+        if (value) {
+          Provider.of<userViewModel>(context, listen: false)
+              .getCompData(ctx: ctx, setState: setState);
+        }
+      });
     });
     super.initState();
   }
@@ -88,10 +92,14 @@ class _completedridesState extends State<completedrides> {
             usermodel.completeRidesList.isEmpty
                 ? SizedBox(
                     height: MediaQuery.of(ctx).size.height / 1.3,
-                    child: Center(
-                      child: Text(
-                        'No Complete Rides',
-                        style: Sty().mediumtext.copyWith(color: Clr().black1),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Center(
+                        child: Text(
+                          'No completed rides yet. Please go to the assign page to accept and complete your rides.',
+                          textAlign: TextAlign.center,
+                          style: Sty().mediumtext.copyWith(color: Clr().black1),
+                        ),
                       ),
                     ),
                   )

@@ -63,12 +63,12 @@ class _LoginState extends State<Login> {
                         hintStyle: Sty().smalltext.copyWith(
                               color: Colors.grey,
                             ),
-                        hintText: "Enter a mobile number",
+                        hintText: "Enter your mobile number",
                         counterText: "",
                       ),
                   validator: (value) {
                     if (value!.isEmpty) {
-                      return 'This filed is required';
+                      return 'This field is required';
                     }
                     if (value.length != 10) {
                       return 'Mobile number must be 10 digits long';
@@ -122,7 +122,7 @@ class _LoginState extends State<Login> {
                       ),
                   validator: (value) {
                     if (value!.isEmpty) {
-                      return 'invalid password';
+                      return 'This field is required';
                     } else {
                       return null;
                     }
@@ -155,14 +155,20 @@ class _LoginState extends State<Login> {
                         child: ElevatedButton(
                           onPressed: () {
                             if (_formKey.currentState!.validate()) {
-                              usermodel.signUser(
-                                ctx: ctx,
-                                setState: setState,
-                                data: {
-                                  'mobile': userCtrl.text,
-                                  'password': passwordCtrl.text,
-                                },
-                              );
+                              STM()
+                                  .checkInternet(context, widget)
+                                  .then((value) {
+                                if (value) {
+                                  usermodel.signUser(
+                                    ctx: ctx,
+                                    setState: setState,
+                                    data: {
+                                      'mobile': userCtrl.text,
+                                      'password': passwordCtrl.text,
+                                    },
+                                  );
+                                }
+                              });
                             }
                           },
                           style: ElevatedButton.styleFrom(

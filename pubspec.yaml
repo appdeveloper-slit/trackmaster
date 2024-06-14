@@ -42,6 +42,8 @@ dependencies:
   intl: 
   url_launcher: 
   map_launcher: 
+  pull_to_refresh: 
+  connectivity_plus:
 
 dev_dependencies:
   flutter_test:

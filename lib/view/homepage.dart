@@ -7,6 +7,7 @@ import 'package:flutter_dash/flutter_dash.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timelines/timelines.dart';
 import 'package:trackmaster/utils/bottomnavigation.dart';
 import 'package:trackmaster/utils/colors.dart';
@@ -26,6 +27,13 @@ class _HomeviewState extends State<Homeview> {
   late BuildContext ctx;
   var CustomerDetails;
   List ongoingRideList = [];
+  var name;
+  getSession() async {
+    SharedPreferences sp = await SharedPreferences.getInstance();
+    setState(() {
+      name = sp.getString('name') ?? '';
+    });
+  }
 
   List nameFiled = [
     'Customer Name:',
@@ -60,6 +68,7 @@ class _HomeviewState extends State<Homeview> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<userViewModel>(context, listen: false)
           .getData(ctx: ctx, setState: setState);
+      getSession();
     });
     super.initState();
   }
@@ -83,12 +92,22 @@ class _HomeviewState extends State<Homeview> {
       body: usermodel.homeLoading
           ? SizedBox(
               height: MediaQuery.of(ctx).size.height,
-              child: Center(
-                child: Text(
-                  'No Ongoing Data',
-                  style: Sty().mediumtext.copyWith(
-                        color: Colors.black,
-                      ),
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: Dim().d12),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset(
+                      'assets/group.png',
+                      fit: BoxFit.cover,
+                      width: Dim().d300,
+                    ),
+                    Text(
+                      "It looks like you don't have any ongoing rides at the moment. Please head to the 'Assigned Rides' page to start your next journey.",
+                      textAlign: TextAlign.center,
+                      style: Sty().mediumtext,
+                    )
+                  ],
                 ),
               ),
             )
@@ -109,7 +128,7 @@ class _HomeviewState extends State<Homeview> {
                             ),
                         children: [
                           TextSpan(
-                            text: ' Diptej Kumar',
+                            text: ' $name',
                             style: Sty().mediumtext.copyWith(
                                   color: Clr().Primarycolor,
                                   fontWeight: FontWeight.w600,
@@ -524,33 +543,12 @@ class _HomeviewState extends State<Homeview> {
                                                 width: Dim().d200,
                                                 child: ElevatedButton(
                                                   onPressed: () {
-                                                    index == 0
-                                                        ? usermodel
-                                                            .updateStatus(
-                                                            ctx,
-                                                            setState,
-                                                            {
-                                                              "ride_location_id":
-                                                                  ongoingRideList[
-                                                                          index]
-                                                                      ['id'],
-                                                              "latitude":
-                                                                  ongoingRideList[
-                                                                          index]
-                                                                      [
-                                                                      'latitude'],
-                                                              "longitude":
-                                                                  ongoingRideList[
-                                                                          index]
-                                                                      [
-                                                                      'longitude']
-                                                            },
-                                                          )
-                                                        : ongoingRideList[
-                                                                        index -
-                                                                            1]
-                                                                    ['date'] !=
-                                                                null
+                                                    STM()
+                                                        .checkInternet(
+                                                            context, widget)
+                                                        .then((value) {
+                                                      if (value) {
+                                                        index == 0
                                                             ? usermodel
                                                                 .updateStatus(
                                                                 ctx,
@@ -572,7 +570,37 @@ class _HomeviewState extends State<Homeview> {
                                                                           'longitude']
                                                                 },
                                                               )
-                                                            : null;
+                                                            : ongoingRideList[index -
+                                                                            1][
+                                                                        'date'] !=
+                                                                    null
+                                                                ? usermodel
+                                                                    .updateStatus(
+                                                                    type: (ongoingRideList.length -
+                                                                                1) ==
+                                                                            index
+                                                                        ? 'last'
+                                                                        : null,
+                                                                    ctx,
+                                                                    setState,
+                                                                    {
+                                                                      "ride_location_id":
+                                                                          ongoingRideList[index]
+                                                                              [
+                                                                              'id'],
+                                                                      "latitude":
+                                                                          ongoingRideList[index]
+                                                                              [
+                                                                              'latitude'],
+                                                                      "longitude":
+                                                                          ongoingRideList[index]
+                                                                              [
+                                                                              'longitude']
+                                                                    },
+                                                                  )
+                                                                : null;
+                                                      }
+                                                    });
                                                   },
                                                   style:
                                                       ElevatedButton.styleFrom(
