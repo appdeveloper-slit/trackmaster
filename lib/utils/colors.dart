@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 class Clr {
@@ -20,4 +19,5 @@ class Clr {
   Color iconClr = Color(0xff6B7076);
   Color bttmTextClr = Color(0xffABABAB);
   Color lightgreen = Color(0xffD9F0D9);
+  Color dottedcolor = Color(0xffD1D1D1);
 }

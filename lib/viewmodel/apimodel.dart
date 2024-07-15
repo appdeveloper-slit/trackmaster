@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trackmaster/services/apifile.dart';
 import 'package:trackmaster/utils/staticmethods.dart';
 import 'package:trackmaster/view/homepage.dart';
+import 'package:trackmaster/view/kycPage.dart';
 
 import '../view/completedrides.dart';
 
@@ -14,6 +15,10 @@ class userViewModel extends ChangeNotifier {
   bool loading = false;
   bool homeLoading = false;
   Map rideDetails = {};
+
+  bool profileLoading = false;
+  Map profileDetails = {};
+
   List assignRidesList = [];
   List completeRidesList = [];
 
@@ -34,11 +39,25 @@ class userViewModel extends ChangeNotifier {
       setState(() {
         loading = false;
         notifyListeners();
-        sp.setString('token', result['data']['token']);
-        sp.setString('name', result['data']['user']['name']);
-        sp.setBool('login', true);
-        Fluttertoast.showToast(msg: result['message']);
-        STM().finishAffinity(ctx, Homeview());
+        if (result['data']['user']['is_kyc'] == true) {
+          setState(() {
+            sp.setString('token', result['data']['token']);
+            sp.setString('name', result['data']['user']['name']);
+            sp.setBool('login', true);
+          });
+          Fluttertoast.showToast(msg: result['message']);
+          STM().finishAffinity(ctx, Homeview());
+        } else {
+          setState(() {
+            sp.setString('token', result['data']['token']);
+            sp.setString('name', result['data']['user']['name']);
+          });
+          STM().redirect2page(ctx, kycpage());
+        }
+
+        // result['data']['user']['is_kyc'] == true
+        //     ? STM().finishAffinity(ctx, Homeview())
+        //     : STM().redirect2page(ctx, kycpage());
       });
     } else {
       loading = false;
@@ -142,6 +161,60 @@ class userViewModel extends ChangeNotifier {
               : null;
       type == 'last' ? Fluttertoast.showToast(msg: 'Ride Completed') : null;
       notifyListeners();
+    } else {
+      loading = false;
+      notifyListeners();
+      STM().errorDialog(ctx, result['message']);
+    }
+  }
+
+  Future<dynamic> uploadDocumnets({
+    ctx,
+    setState,
+    body,
+  }) async {
+    SharedPreferences sp = await SharedPreferences.getInstance();
+    loading = true;
+    notifyListeners();
+    var result = await ser.allApi(
+      apiname: 'update_document',
+      ctx: ctx,
+      token: sp.getString('token'),
+      type: 'post',
+      body: body,
+    );
+    print(body);
+    if (result['success'] == true) {
+      setState(() {
+        sp.setBool('login', true);
+        Fluttertoast.showToast(msg: result['message']);
+        STM().finishAffinity(ctx, Homeview());
+      });
+    } else {
+      loading = false;
+      notifyListeners();
+      STM().errorDialog(ctx, result['message']);
+    }
+  }
+
+  Future<dynamic> getProfileData({ctx, setState}) async {
+    SharedPreferences sp = await SharedPreferences.getInstance();
+    loading = true;
+    notifyListeners();
+    var result = await ser.allApi(
+      apiname: 'my_profile',
+      ctx: ctx,
+      token: sp.getString('token'),
+      type: 'get',
+    );
+    if (result['success'] == true) {
+      setState(() {
+        loading = false;
+        result['data'] == null ? profileLoading = true : profileLoading = false;
+        notifyListeners();
+        profileDetails = result['data'];
+        notifyListeners();
+      });
     } else {
       loading = false;
       notifyListeners();
