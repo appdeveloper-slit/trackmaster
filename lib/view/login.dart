@@ -131,15 +131,15 @@ class _LoginState extends State<Login> {
                 SizedBox(
                   height: Dim().d12,
                 ),
-                Align(
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                      'Forgot Password?',
-                      style: Sty().microText.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: Clr().bttnColor,
-                          ),
-                    )),
+                // Align(
+                //     alignment: Alignment.centerRight,
+                //     child: Text(
+                //       'Forgot Password?',
+                //       style: Sty().microText.copyWith(
+                //             fontWeight: FontWeight.w600,
+                //             color: Clr().bttnColor,
+                //           ),
+                //     )),
                 SizedBox(
                   height: Dim().d40,
                 ),

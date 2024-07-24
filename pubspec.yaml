@@ -52,6 +52,7 @@ dependencies:
   app_settings:
   dio: 
   geocoding: 
+  onesignal_flutter:
 
 dev_dependencies:
   flutter_test:

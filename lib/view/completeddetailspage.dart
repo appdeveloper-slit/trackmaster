@@ -379,12 +379,35 @@ class _completeddetilspageState extends State<completeddetilspage> {
                           Row(
                             children: [
                               Expanded(
-                                child: Text(
-                                  ongoingRideList[index]['address'],
-                                  style: Sty().smalltext.copyWith(
-                                        color: Clr().charcole,
-                                        fontWeight: FontWeight.w400,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    if (ongoingRideList[index]['location'] !=
+                                        null)
+                                      Text(
+                                        ongoingRideList[index]['location'],
+                                        maxLines: 3,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: Sty().smalltext.copyWith(
+                                              color: Clr().charcole,
+                                              fontWeight: FontWeight.w400,
+                                            ),
                                       ),
+                                    if (ongoingRideList[index]['location'] !=
+                                        null)
+                                      SizedBox(
+                                        height: Dim().d12,
+                                      ),
+                                    Text(
+                                      ongoingRideList[index]['address'],
+                                      maxLines: 3,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: Sty().smalltext.copyWith(
+                                            color: Clr().charcole,
+                                            fontWeight: FontWeight.w400,
+                                          ),
+                                    ),
+                                  ],
                                 ),
                               ),
                               // SizedBox(

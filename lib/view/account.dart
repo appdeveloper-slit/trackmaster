@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -7,6 +9,7 @@ import 'package:trackmaster/utils/colors.dart';
 import 'package:trackmaster/utils/dimension.dart';
 import 'package:trackmaster/utils/staticmethods.dart';
 import 'package:trackmaster/utils/styles.dart';
+import 'package:trackmaster/view/homepage.dart';
 import 'package:trackmaster/view/kycPage.dart';
 import 'package:trackmaster/view/login.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -70,386 +73,438 @@ class _accountPageState extends State<accountPage> {
               ),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Container(
-              width: double.infinity,
-              margin: EdgeInsets.symmetric(
-                  horizontal: Dim().d20, vertical: Dim().d12),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.all(Radius.circular(Dim().d12)),
-                border: Border.all(color: Clr().black1, width: 0.2),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.account_circle,
-                          color: Clr().slategrey,
-                          size: Dim().d20,
-                        ),
-                        SizedBox(
-                          width: Dim().d12,
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Name',
-                              style: Sty().smalltext,
-                            ),
-                            SizedBox(
-                              height: Dim().d2,
-                            ),
-                            Text(
-                              '${profiledetails['name']}',
-                              style: Sty()
-                                  .microText
-                                  .copyWith(color: Clr().slategrey),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    SizedBox(
-                      height: Dim().d12,
-                    ),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.phone,
-                          color: Clr().slategrey,
-                          size: Dim().d20,
-                        ),
-                        SizedBox(
-                          width: Dim().d12,
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Mobile Number',
-                              style: Sty().smalltext,
-                            ),
-                            SizedBox(
-                              height: Dim().d2,
-                            ),
-                            Text(
-                              '${profiledetails['mobile']}',
-                              style: Sty()
-                                  .microText
-                                  .copyWith(color: Clr().slategrey),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    SizedBox(
-                      height: Dim().d12,
-                    ),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.car_repair_rounded,
-                          color: Clr().slategrey,
-                          size: Dim().d20,
-                        ),
-                        SizedBox(
-                          width: Dim().d12,
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'License Number',
-                              style: Sty().smalltext,
-                            ),
-                            SizedBox(
-                              height: Dim().d2,
-                            ),
-                            Text(
-                              '${profiledetails['license_number']}',
-                              style: Sty()
-                                  .microText
-                                  .copyWith(color: Clr().slategrey),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    SizedBox(
-                      height: Dim().d12,
-                    ),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.assignment_ind,
-                          color: Clr().slategrey,
-                          size: Dim().d20,
-                        ),
-                        SizedBox(
-                          width: Dim().d12,
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Aadhaar Card Number',
-                              style: Sty().smalltext,
-                            ),
-                            SizedBox(
-                              height: Dim().d2,
-                            ),
-                            Text(
-                              '${profiledetails['aadhar_card_number']}',
-                              style: Sty()
-                                  .microText
-                                  .copyWith(color: Clr().slategrey),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    SizedBox(
-                      height: Dim().d12,
-                    ),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.source,
-                          color: Clr().slategrey,
-                          size: Dim().d20,
-                        ),
-                        SizedBox(
-                          width: Dim().d12,
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Pan Card Number',
-                              style: Sty().smalltext,
-                            ),
-                            SizedBox(
-                              height: Dim().d2,
-                            ),
-                            Text(
-                              '${profiledetails['pan_card_number']}',
-                              style: Sty()
-                                  .microText
-                                  .copyWith(color: Clr().slategrey),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    SizedBox(
-                      height: Dim().d28,
-                    ),
-                    Align(
-                      alignment: Alignment.center,
-                      child: SizedBox(
-                        width: Dim().d200,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Clr().Primarycolor,
-                          ),
-                          onPressed: () {
-                            STM().redirect2page(
-                              ctx,
-                              kycpage(
-                                data: profiledetails,
-                                type: 'edit',
-                              ),
-                            );
-                            print(profiledetails);
-                          },
-                          child: Center(
-                            child: Text(
-                              'Update KYC',
-                              style: Sty().smalltext.copyWith(
-                                    color: Colors.white,
-                                  ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    )
-                  ],
-                ),
-              ),
-            ),
-            Container(
-              width: double.infinity,
-              margin: EdgeInsets.symmetric(horizontal: Dim().d20),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.all(Radius.circular(Dim().d12)),
-                border: Border.all(color: Clr().black1, width: 0.2),
-              ),
+      body: profiledetails == null
+          ? Center(
+              child: CircularProgressIndicator(),
+            )
+          : SingleChildScrollView(
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  Container(
+                    width: double.infinity,
+                    margin: EdgeInsets.symmetric(
+                        horizontal: Dim().d20, vertical: Dim().d12),
+                    decoration: BoxDecoration(
+                      borderRadius:
+                          BorderRadius.all(Radius.circular(Dim().d12)),
+                      border: Border.all(color: Clr().black1, width: 0.2),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.account_circle,
+                                color: Clr().slategrey,
+                                size: Dim().d20,
+                              ),
+                              SizedBox(
+                                width: Dim().d12,
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Name',
+                                    style: Sty().smalltext,
+                                  ),
+                                  SizedBox(
+                                    height: Dim().d2,
+                                  ),
+                                  Text(
+                                    '${profiledetails['name']}',
+                                    style: Sty()
+                                        .microText
+                                        .copyWith(color: Clr().slategrey),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          SizedBox(
+                            height: Dim().d12,
+                          ),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.phone,
+                                color: Clr().slategrey,
+                                size: Dim().d20,
+                              ),
+                              SizedBox(
+                                width: Dim().d12,
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Mobile Number',
+                                    style: Sty().smalltext,
+                                  ),
+                                  SizedBox(
+                                    height: Dim().d2,
+                                  ),
+                                  Text(
+                                    '${profiledetails['mobile']}',
+                                    style: Sty()
+                                        .microText
+                                        .copyWith(color: Clr().slategrey),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          SizedBox(
+                            height: Dim().d12,
+                          ),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.car_repair_rounded,
+                                color: Clr().slategrey,
+                                size: Dim().d20,
+                              ),
+                              SizedBox(
+                                width: Dim().d12,
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'License Number',
+                                    style: Sty().smalltext,
+                                  ),
+                                  SizedBox(
+                                    height: Dim().d2,
+                                  ),
+                                  Text(
+                                    '${profiledetails['license_number']}',
+                                    style: Sty()
+                                        .microText
+                                        .copyWith(color: Clr().slategrey),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          SizedBox(
+                            height: Dim().d12,
+                          ),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.assignment_ind,
+                                color: Clr().slategrey,
+                                size: Dim().d20,
+                              ),
+                              SizedBox(
+                                width: Dim().d12,
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Aadhaar Card Number',
+                                    style: Sty().smalltext,
+                                  ),
+                                  SizedBox(
+                                    height: Dim().d2,
+                                  ),
+                                  Text(
+                                    '${profiledetails['aadhar_card_number']}',
+                                    style: Sty()
+                                        .microText
+                                        .copyWith(color: Clr().slategrey),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          SizedBox(
+                            height: Dim().d12,
+                          ),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.source,
+                                color: Clr().slategrey,
+                                size: Dim().d20,
+                              ),
+                              SizedBox(
+                                width: Dim().d12,
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Pan Card Number',
+                                    style: Sty().smalltext,
+                                  ),
+                                  SizedBox(
+                                    height: Dim().d2,
+                                  ),
+                                  Text(
+                                    '${profiledetails['pan_card_number']}',
+                                    style: Sty()
+                                        .microText
+                                        .copyWith(color: Clr().slategrey),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          SizedBox(
+                            height: Dim().d28,
+                          ),
+                          Align(
+                            alignment: Alignment.center,
+                            child: SizedBox(
+                              width: Dim().d200,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Clr().Primarycolor,
+                                ),
+                                onPressed: () {
+                                  STM().redirect2page(
+                                    ctx,
+                                    kycpage(
+                                      data: profiledetails,
+                                      type: 'edit',
+                                    ),
+                                  );
+                                  print(profiledetails);
+                                },
+                                child: Center(
+                                  child: Text(
+                                    'Update KYC',
+                                    style: Sty().smalltext.copyWith(
+                                          color: Colors.white,
+                                        ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                  Container(
+                    width: double.infinity,
+                    margin: EdgeInsets.symmetric(horizontal: Dim().d20),
+                    decoration: BoxDecoration(
+                      borderRadius:
+                          BorderRadius.all(Radius.circular(Dim().d12)),
+                      border: Border.all(color: Clr().black1, width: 0.2),
+                    ),
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: ElevatedButton(
+                            onPressed: () {
+                              STM().redirect2page(ctx, const aboutUs());
+                            },
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(Dim().d8),
+                                ),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'About Us',
+                                  style: Sty().microText,
+                                ),
+                                Icon(
+                                  Icons.arrow_forward_ios,
+                                  size: Dim().d12,
+                                )
+                              ],
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: Dim().d12),
+                          child: ElevatedButton(
+                            onPressed: () {
+                              STM().redirect2page(ctx, const contactUs());
+                            },
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(Dim().d8),
+                                ),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Contact Us',
+                                  style: Sty().microText,
+                                ),
+                                Icon(
+                                  Icons.arrow_forward_ios,
+                                  size: Dim().d12,
+                                )
+                              ],
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              try {
+                                await launch(
+                                  'https://lawmakers.co.in/track_master/public/privacy_policy',
+                                );
+                              } catch (_) {
+                                Fluttertoast.showToast(msg: "Can't open link");
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(Dim().d8),
+                                ),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Privacy Policy',
+                                  style: Sty().microText,
+                                ),
+                                Icon(
+                                  Icons.arrow_forward_ios,
+                                  size: Dim().d12,
+                                )
+                              ],
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: Dim().d12),
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              try {
+                                await launch(
+                                  'https://lawmakers.co.in/track_master/public/terms_condition',
+                                );
+                              } catch (_) {
+                                Fluttertoast.showToast(msg: "Can't open link");
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(Dim().d8),
+                                ),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Terms & Condition',
+                                  style: Sty().microText,
+                                ),
+                                Icon(
+                                  Icons.arrow_forward_ios,
+                                  size: Dim().d12,
+                                )
+                              ],
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          height: Dim().d12,
+                        )
+                      ],
+                    ),
+                  ),
                   Padding(
                     padding: const EdgeInsets.all(12.0),
                     child: ElevatedButton(
-                      onPressed: () {
-                        STM().redirect2page(ctx, const aboutUs());
-                      },
                       style: ElevatedButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(Dim().d8),
-                          ),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'About Us',
-                            style: Sty().microText,
-                          ),
-                          Icon(
-                            Icons.arrow_forward_ios,
-                            size: Dim().d12,
-                          )
-                        ],
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: Dim().d12),
-                    child: ElevatedButton(
-                      onPressed: () {
-                        STM().redirect2page(ctx, const contactUs());
-                      },
-                      style: ElevatedButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(Dim().d8),
-                          ),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Contact Us',
-                            style: Sty().microText,
-                          ),
-                          Icon(
-                            Icons.arrow_forward_ios,
-                            size: Dim().d12,
-                          )
-                        ],
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: ElevatedButton(
+                          backgroundColor: Clr().Primarycolor,
+                          padding: EdgeInsets.symmetric(vertical: Dim().d12)),
                       onPressed: () async {
-                        try {
-                          await launch(
-                            'https://lawmakers.co.in/track_master/public/privacy_policy',
-                          );
-                        } catch (_) {
-                          Fluttertoast.showToast(msg: "Can't open link");
-                        }
+                        SharedPreferences sp =
+                            await SharedPreferences.getInstance();
+                        setState(() {
+                          sp.clear();
+                          STM().finishAffinity(context, const Login());
+                        });
                       },
-                      style: ElevatedButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(Dim().d8),
-                          ),
+                      child: Center(
+                        child: Text(
+                          'Log Out',
+                          style: Sty().mediumtext.copyWith(
+                                color: Colors.white,
+                              ),
                         ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Privacy Policy',
-                            style: Sty().microText,
-                          ),
-                          Icon(
-                            Icons.arrow_forward_ios,
-                            size: Dim().d12,
-                          )
-                        ],
                       ),
                     ),
                   ),
                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: Dim().d12),
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        try {
-                          await launch(
-                            'https://lawmakers.co.in/track_master/public/terms_condition',
-                          );
-                        } catch (_) {
-                          Fluttertoast.showToast(msg: "Can't open link");
-                        }
+                    padding: const EdgeInsets.all(8.0),
+                    child: InkWell(
+                      onTap: () {
+                        showDialog(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                backgroundColor: Colors.white,
+                                elevation: 0,
+                                title: Text('Delete Account',
+                                    style: Sty().mediumtext),
+                                content: Text(
+                                    'Are you sure want to delete account?',
+                                    style: Sty().smalltext),
+                                actions: [
+                                  TextButton(
+                                      onPressed: () {
+                                        // prfileApis().deleteacc(ctx, setState);
+                                        setState(() {
+                                          service.invoke('stopService');
+                                        });
+                                        usermodel.accountdelete(
+                                            ctx: ctx, setState: setState);
+                                      },
+                                      child: Text('Yes',
+                                          style: Sty().smalltext.copyWith(
+                                              fontWeight: FontWeight.w600))),
+                                  TextButton(
+                                      onPressed: () {
+                                        STM().back2Previous(ctx);
+                                      },
+                                      child: Text('No',
+                                          style: Sty().smalltext.copyWith(
+                                              fontWeight: FontWeight.w600))),
+                                ],
+                              );
+                            });
                       },
-                      style: ElevatedButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(Dim().d8),
-                          ),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Terms & Condition',
-                            style: Sty().microText,
-                          ),
-                          Icon(
-                            Icons.arrow_forward_ios,
-                            size: Dim().d12,
-                          )
-                        ],
-                      ),
+                      child: Text('Delete My Account',
+                          style: Sty().mediumtext.copyWith(
+                                color: Colors.red,
+                              )),
                     ),
                   ),
-                  SizedBox(
-                    height: Dim().d12,
-                  )
                 ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: Clr().Primarycolor,
-                    padding: EdgeInsets.symmetric(vertical: Dim().d12)),
-                onPressed: () async {
-                  SharedPreferences sp = await SharedPreferences.getInstance();
-                  setState(() {
-                    sp.clear();
-                    STM().finishAffinity(context, const Login());
-                  });
-                },
-                child: Center(
-                  child: Text(
-                    'Log Out',
-                    style: Sty().mediumtext.copyWith(
-                          color: Colors.white,
-                        ),
-                  ),
-                ),
-              ),
-            )
-          ],
-        ),
-      ),
     );
   }
 }

@@ -258,7 +258,7 @@ class _HomeviewState extends State<Homeview> {
         toolbarHeight: 30.0,
         surfaceTintColor: Colors.transparent,
       ),
-      body: usermodel.homeLoading
+      body: CustomerDetails == null
           ? SizedBox(
               height: MediaQuery.of(ctx).size.height,
               child: Padding(
@@ -307,6 +307,7 @@ class _HomeviewState extends State<Homeview> {
                       ),
                     ),
                   ),
+
                   Container(
                     margin: EdgeInsets.only(top: Dim().d16, bottom: Dim().d12),
                     height: Dim().d44,
@@ -336,6 +337,7 @@ class _HomeviewState extends State<Homeview> {
                           ]),
                     ),
                   ),
+
                   Padding(
                     padding: EdgeInsets.symmetric(
                       horizontal: Dim().d16,
@@ -640,14 +642,39 @@ class _HomeviewState extends State<Homeview> {
                                 Row(
                                   children: [
                                     Expanded(
-                                      child: Text(
-                                        ongoingRideList[index]['address'],
-                                        maxLines: 3,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: Sty().smalltext.copyWith(
-                                              color: Clr().charcole,
-                                              fontWeight: FontWeight.w400,
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          if (ongoingRideList[index]
+                                                  ['location'] !=
+                                              null)
+                                            Text(
+                                              ongoingRideList[index]
+                                                  ['location'],
+                                              maxLines: 3,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: Sty().smalltext.copyWith(
+                                                    color: Clr().charcole,
+                                                    fontWeight: FontWeight.w400,
+                                                  ),
                                             ),
+                                          if (ongoingRideList[index]
+                                                  ['location'] !=
+                                              null)
+                                            SizedBox(
+                                              height: Dim().d12,
+                                            ),
+                                          Text(
+                                            ongoingRideList[index]['address'],
+                                            maxLines: 3,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: Sty().smalltext.copyWith(
+                                                  color: Clr().charcole,
+                                                  fontWeight: FontWeight.w400,
+                                                ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                     SizedBox(

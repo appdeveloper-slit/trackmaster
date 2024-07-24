@@ -2,11 +2,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trackmaster/services/apifile.dart';
 import 'package:trackmaster/utils/staticmethods.dart';
 import 'package:trackmaster/view/homepage.dart';
 import 'package:trackmaster/view/kycPage.dart';
+import 'package:trackmaster/view/login.dart';
 
 import '../view/completedrides.dart';
 
@@ -75,11 +77,13 @@ class userViewModel extends ChangeNotifier {
     loading = true;
     notifyListeners();
     var result = await ser.allApi(
-      apiname: 'ongoing_ride',
-      ctx: ctx,
-      token: sp.getString('token'),
-      type: 'get',
-    );
+        apiname: 'ongoing_ride',
+        ctx: ctx,
+        token: sp.getString('token'),
+        type: 'post',
+        body: {
+          'uuid': OneSignal.User.pushSubscription.id,
+        });
     if (result['success'] == true) {
       setState(() {
         loading = false;
@@ -135,6 +139,31 @@ class userViewModel extends ChangeNotifier {
         print(result);
         contactdetails = result;
         // aboutUsContent = result['about_us'];
+        notifyListeners();
+      });
+    } else {
+      loading = false;
+      notifyListeners();
+      STM().errorDialog(ctx, result['message']);
+    }
+  }
+
+  Future<dynamic> accountdelete({ctx, setState}) async {
+    SharedPreferences sp = await SharedPreferences.getInstance();
+    loading = true;
+    notifyListeners();
+    var result = await ser.allApi(
+      apiname: 'delete_account',
+      ctx: ctx,
+      token: sp.getString('token'),
+      type: 'get',
+    );
+    if (result['success'] == true) {
+      setState(() {
+        loading = false;
+        sp.clear();
+        Fluttertoast.showToast(msg: result['message']);
+        STM().finishAffinity(ctx, Login());
         notifyListeners();
       });
     } else {

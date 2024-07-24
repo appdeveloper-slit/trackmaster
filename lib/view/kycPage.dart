@@ -208,8 +208,11 @@ class _kycpageState extends State<kycpage> {
               SizedBox(
                 height: Dim().d12,
               ),
-              imageLayout('Front Side',
-                  aadharFrtFile ?? widget.data['aadhar_card_front']),
+              imageLayout(
+                  'Front Side',
+                  widget.data != null
+                      ? widget.data['aadhar_card_front']
+                      : aadharFrtFile),
               SizedBox(
                 height: Dim().d12,
               ),
@@ -300,8 +303,11 @@ class _kycpageState extends State<kycpage> {
               SizedBox(
                 height: Dim().d12,
               ),
-              imageLayout('Back Side',
-                  aadharBckFile ?? widget.data['aadhar_card_back']),
+              imageLayout(
+                  'Back Side',
+                  widget.data != null
+                      ? widget.data['aadhar_card_back']
+                      : aadharBckFile),
               SizedBox(
                 height: Dim().d12,
               ),
@@ -411,7 +417,8 @@ class _kycpageState extends State<kycpage> {
               SizedBox(
                 height: Dim().d12,
               ),
-              imageLayout('Pan Card', imageFile ?? widget.data['pan_card']),
+              imageLayout('Pan Card',
+                  widget.data != null ? widget.data['pan_card'] : imageFile),
               SizedBox(
                 height: Dim().d20,
               ),
@@ -497,6 +504,18 @@ class _kycpageState extends State<kycpage> {
                     fit: BoxFit.fitWidth,
                     scale: 1,
                     height: 100,
+                    loadingBuilder: (BuildContext context, Widget child,
+                        ImageChunkEvent? loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Center(
+                        child: CircularProgressIndicator(
+                          value: loadingProgress.expectedTotalBytes != null
+                              ? loadingProgress.cumulativeBytesLoaded /
+                                  (loadingProgress.expectedTotalBytes ?? 1)
+                              : null,
+                        ),
+                      );
+                    },
                   )
                 : Stack(
                     fit: StackFit.expand,
