@@ -1,11 +1,23 @@
-// ignore_for_file: prefer_const_constructors, unnecessary_null_comparison
+// ignore_for_file: prefer_const_constructors, unnecessary_null_comparison, use_build_context_synchronously
 
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+import 'package:app_settings/app_settings.dart';
+import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_dash/flutter_dash.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timelines/timelines.dart';
@@ -15,6 +27,63 @@ import 'package:trackmaster/utils/dimension.dart';
 import 'package:trackmaster/utils/staticmethods.dart';
 import 'package:trackmaster/utils/styles.dart';
 import 'package:trackmaster/viewmodel/apimodel.dart';
+
+import '../services/apifile.dart';
+
+final service = FlutterBackgroundService();
+
+checkPermission() async {
+  SharedPreferences sp = await SharedPreferences.getInstance();
+  bool check = await Permission.location.isGranted;
+  bool checkDeviceLoc = await Geolocator.isLocationServiceEnabled();
+
+  if (checkDeviceLoc) {
+    if (check) {
+      Position? position = await Geolocator.getCurrentPosition();
+      final apiServices ser = apiServices();
+
+      List<Placemark> list =
+          await placemarkFromCoordinates(position.latitude, position.longitude);
+      var result = await ser.allApi(
+        apiname: 'update_location',
+        token: sp.getString('token'),
+        type: 'post',
+        body: {
+          'latitude': position.latitude,
+          'longitude': position.longitude,
+        },
+      );
+      print(result);
+    } else {
+      service.invoke('stopService');
+    }
+  } else {
+    service.invoke('stopService');
+  }
+}
+
+@pragma('vm:entry-point')
+void onStart(ServiceInstance service) async {
+  if (service is AndroidServiceInstance) {
+    service.on('setAsForeground').listen((event) {
+      service.setAsForegroundService();
+    });
+
+    service.on('setAsBackground').listen((event) {
+      service.setAsBackgroundService();
+    });
+  }
+
+  service.on('stopService').listen((event) {
+    service.stopSelf();
+  });
+
+  Timer.periodic(const Duration(seconds: 5), (timer) async {
+    checkPermission();
+    service.invoke('setAsBackground');
+    service.invoke('update');
+  });
+}
 
 class Homeview extends StatefulWidget {
   const Homeview({super.key});
@@ -28,11 +97,111 @@ class _HomeviewState extends State<Homeview> {
   var CustomerDetails;
   List ongoingRideList = [];
   var name;
+  bool checkLoc = false;
+  bool checkDeLoc = false;
+  var lat, lng;
+
+  initializeService() async {
+    await service.configure(
+      iosConfiguration: IosConfiguration(),
+      androidConfiguration: AndroidConfiguration(
+        onStart: onStart,
+        isForegroundMode: true,
+        autoStart: true,
+        autoStartOnBoot: true,
+        initialNotificationTitle: 'TrackMaster',
+        initialNotificationContent: 'Current Location Fetching...',
+      ),
+    );
+  }
+
   getSession() async {
     SharedPreferences sp = await SharedPreferences.getInstance();
     setState(() {
       name = sp.getString('name') ?? '';
     });
+    bool check = await Permission.location.isGranted;
+    bool checkDeviceLoc = await Geolocator.isLocationServiceEnabled();
+    if (checkDeviceLoc) {
+      if (check) {
+        Position? position = await Geolocator.getCurrentPosition();
+        initializeService();
+      } else {
+        setState(() {
+          service.invoke('stopService');
+        });
+        locationDialog(
+          img: 'assets/loc.png',
+          title: 'Location permission is required',
+          des:
+              'Fetching your location to update your current position and check task status',
+        );
+      }
+    } else {
+      setState(() {
+        service.invoke('stopService');
+      });
+      AwesomeDialog(
+          context: context,
+          dialogType: DialogType.noHeader,
+          dialogBackgroundColor: Colors.white,
+          animType: AnimType.scale,
+          width: double.infinity,
+          dismissOnBackKeyPress: false,
+          dismissOnTouchOutside: false,
+          body: Padding(
+            padding: EdgeInsets.symmetric(horizontal: Dim().d12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text('Device Location',
+                    style: Sty().mediumtext.copyWith(
+                        color: Clr().Primarycolor,
+                        fontSize: Dim().d16,
+                        fontWeight: FontWeight.w700)),
+                Text('Please allow device location access',
+                    textAlign: TextAlign.center,
+                    style: Sty().mediumtext.copyWith(
+                        color: Clr().textClr,
+                        fontSize: Dim().d14,
+                        fontWeight: FontWeight.w400)),
+                SizedBox(height: Dim().d20),
+                ElevatedButton(
+                    onPressed: () async {
+                      if (checkDeLoc == true) {
+                        STM().back2Previous(ctx);
+                        checkDeLoc = false;
+                        getSession();
+                      } else {
+                        AppSettings.openAppSettings(
+                                type: AppSettingsType.location)
+                            .then((value) {
+                          setState(() {
+                            checkDeLoc = true;
+                          });
+                        });
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: Clr().Primarycolor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(Dim().d16),
+                        )),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: Dim().d12),
+                      child: Center(
+                        child: Text('Continue',
+                            style: Sty().mediumtext.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w500,
+                                fontSize: Dim().d16)),
+                      ),
+                    )),
+                SizedBox(height: Dim().d20),
+              ],
+            ),
+          )).show();
+    }
   }
 
   List nameFiled = [
@@ -66,7 +235,7 @@ class _HomeviewState extends State<Homeview> {
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<userViewModel>(context, listen: false)
+      Provider.of<userViewModel>(context as BuildContext, listen: false)
           .getData(ctx: ctx, setState: setState);
       getSession();
     });
@@ -786,5 +955,167 @@ class _HomeviewState extends State<Homeview> {
         ),
       ),
     );
+  }
+
+  ///location dialog
+  locationDialog({title, des, img, type}) {
+    return AwesomeDialog(
+        context: context as BuildContext,
+        dialogType: DialogType.noHeader,
+        dialogBackgroundColor: Colors.white,
+        animType: AnimType.scale,
+        width: double.infinity,
+        dismissOnBackKeyPress: false,
+        dismissOnTouchOutside: false,
+        body: Padding(
+          padding: EdgeInsets.symmetric(horizontal: Dim().d12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Image.asset(img, fit: BoxFit.fitWidth),
+              Text(title,
+                  style: Sty().mediumtext.copyWith(
+                      color: Clr().Primarycolor,
+                      fontSize: Dim().d16,
+                      fontWeight: FontWeight.w700)),
+              Text(des,
+                  textAlign: TextAlign.center,
+                  style: Sty().mediumtext.copyWith(
+                      color: Clr().textClr,
+                      fontSize: Dim().d14,
+                      fontWeight: FontWeight.w400)),
+              SizedBox(height: Dim().d20),
+              ElevatedButton(
+                  onPressed: () async {
+                    STM().back2Previous(ctx);
+                    getCurrentLct();
+                  },
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: Clr().Primarycolor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(Dim().d16),
+                      )),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: Dim().d12),
+                    child: Center(
+                      child: Text('Continue',
+                          style: Sty().mediumtext.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w500,
+                              fontSize: Dim().d16)),
+                    ),
+                  )),
+              SizedBox(height: Dim().d20),
+            ],
+          ),
+        )).show();
+  }
+
+  /// currentLocation
+  getCurrentLct() async {
+    SharedPreferences sp = await SharedPreferences.getInstance();
+    LocationPermission permission = await Geolocator.requestPermission();
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.always ||
+        permission == LocationPermission.whileInUse) {
+      Position? position = await Geolocator.getCurrentPosition();
+      initializeService();
+    }
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
+      setState(() {
+        service.invoke('stopService');
+      });
+      // ignore: use_build_context_synchronously
+      AwesomeDialog(
+          context: ctx,
+          width: double.infinity,
+          dialogBackgroundColor: Colors.white,
+          dialogType: DialogType.noHeader,
+          dismissOnBackKeyPress: false,
+          dismissOnTouchOutside: false,
+          body: StatefulBuilder(
+            builder: (context, setState) {
+              return Padding(
+                padding: EdgeInsets.symmetric(horizontal: Dim().d12),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                        'Kindly grant location permission through your device settings.',
+                        style: Sty().mediumtext.copyWith(
+                            color: Clr().Primarycolor,
+                            fontWeight: FontWeight.w400)),
+                    SizedBox(
+                      height: Dim().d12,
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                              onPressed: () async {
+                                if (checkLoc == true) {
+                                  setState(() {
+                                    STM().back2Previous(ctx);
+                                    checkLoc = false;
+                                    getCurrentLct();
+                                  });
+                                } else {
+                                  await Geolocator.openAppSettings()
+                                      .then((value) {
+                                    setState(() {
+                                      checkLoc = true;
+                                    });
+                                  });
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Clr().Primarycolor,
+                              ),
+                              child: Padding(
+                                padding: EdgeInsets.all(Dim().d8),
+                                child: Text(
+                                  checkLoc == true ? 'Continue' : 'Go Settings',
+                                  style: Sty()
+                                      .smalltext
+                                      .copyWith(color: Colors.white),
+                                ),
+                              )),
+                        ),
+                        SizedBox(
+                          width: Dim().d12,
+                        ),
+                        Expanded(
+                          child: ElevatedButton(
+                              onPressed: () async {
+                                setState(() {
+                                  sp.clear();
+                                  SystemNavigator.pop();
+                                });
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Clr().Primarycolor,
+                              ),
+                              child: Padding(
+                                padding: EdgeInsets.all(Dim().d8),
+                                child: Text(
+                                  'Close App',
+                                  style: Sty()
+                                      .smalltext
+                                      .copyWith(color: Colors.white),
+                                ),
+                              )),
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                      height: Dim().d12,
+                    ),
+                  ],
+                ),
+              );
+            },
+          )).show();
+    }
   }
 }

@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trackmaster/utils/staticmethods.dart';
@@ -13,6 +14,9 @@ import 'view/login.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SharedPreferences sp = await SharedPreferences.getInstance();
+
+  
+
   await Future.delayed(const Duration(seconds: 3));
   runApp(
     ChangeNotifierProvider(

@@ -46,6 +46,12 @@ dependencies:
   connectivity_plus:
   dotted_border:
   image_picker:
+  permission_handler: 
+  geolocator: 
+  flutter_background_service: 
+  app_settings:
+  dio: 
+  geocoding: 
 
 dev_dependencies:
   flutter_test:

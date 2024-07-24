@@ -93,7 +93,7 @@ class _completedridesState extends State<completedrides> {
                 ? SizedBox(
                     height: MediaQuery.of(ctx).size.height / 1.3,
                     child: Padding(
-                      padding: const EdgeInsets.all(8.0),
+                      padding: const EdgeInsets.all(12.0),
                       child: Center(
                         child: Text(
                           'No completed rides yet. Please go to the assign page to accept and complete your rides.',

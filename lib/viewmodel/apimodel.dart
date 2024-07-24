@@ -15,6 +15,8 @@ class userViewModel extends ChangeNotifier {
   bool loading = false;
   bool homeLoading = false;
   Map rideDetails = {};
+  var aboutUsContent;
+  Map contactdetails = {};
 
   bool profileLoading = false;
   Map profileDetails = {};
@@ -43,6 +45,7 @@ class userViewModel extends ChangeNotifier {
           setState(() {
             sp.setString('token', result['data']['token']);
             sp.setString('name', result['data']['user']['name']);
+            sp.setString('driverId', result['data']['user']['id'].toString());
             sp.setBool('login', true);
           });
           Fluttertoast.showToast(msg: result['message']);
@@ -51,6 +54,7 @@ class userViewModel extends ChangeNotifier {
           setState(() {
             sp.setString('token', result['data']['token']);
             sp.setString('name', result['data']['user']['name']);
+            sp.setString('driverId', result['data']['user']['id'].toString());
           });
           STM().redirect2page(ctx, kycpage());
         }
@@ -82,6 +86,55 @@ class userViewModel extends ChangeNotifier {
         result['data'] == null ? homeLoading = true : homeLoading = false;
         notifyListeners();
         rideDetails = result['data'];
+        notifyListeners();
+      });
+    } else {
+      loading = false;
+      notifyListeners();
+      STM().errorDialog(ctx, result['message']);
+    }
+  }
+
+  Future<dynamic> getAboutUsData({ctx, setState}) async {
+    SharedPreferences sp = await SharedPreferences.getInstance();
+    loading = true;
+    notifyListeners();
+    var result = await ser.allApi(
+      apiname: 'about_us',
+      ctx: ctx,
+      token: sp.getString('token'),
+      type: 'get',
+    );
+    if (result['success'] == true) {
+      setState(() {
+        loading = false;
+        print(result);
+        aboutUsContent = result['about_us'];
+        notifyListeners();
+      });
+    } else {
+      loading = false;
+      notifyListeners();
+      STM().errorDialog(ctx, result['message']);
+    }
+  }
+
+  Future<dynamic> getContactUsData({ctx, setState}) async {
+    SharedPreferences sp = await SharedPreferences.getInstance();
+    loading = true;
+    notifyListeners();
+    var result = await ser.allApi(
+      apiname: 'contact_us',
+      ctx: ctx,
+      token: sp.getString('token'),
+      type: 'get',
+    );
+    if (result['success'] == true) {
+      setState(() {
+        loading = false;
+        print(result);
+        contactdetails = result;
+        // aboutUsContent = result['about_us'];
         notifyListeners();
       });
     } else {

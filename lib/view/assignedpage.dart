@@ -105,11 +105,15 @@ class _assignpageState extends State<assignpage> {
               usermodel.assignRidesList.isEmpty
                   ? SizedBox(
                       height: MediaQuery.of(ctx).size.height / 1.3,
-                      child: Center(
-                        child: Text(
-                          'No assigned rides yet. Please scroll down to refresh the page.',
-                          textAlign: TextAlign.center,
-                          style: Sty().mediumtext.copyWith(color: Clr().black1),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                        child: Center(
+                          child: Text(
+                            'No assigned rides yet. Please scroll down to refresh the page.',
+                            textAlign: TextAlign.center,
+                            style:
+                                Sty().mediumtext.copyWith(color: Clr().black1),
+                          ),
                         ),
                       ),
                     )
