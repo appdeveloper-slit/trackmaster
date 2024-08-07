@@ -211,7 +211,7 @@ class _kycpageState extends State<kycpage> {
               imageLayout(
                   'Front Side',
                   widget.data != null
-                      ? widget.data['aadhar_card_front']
+                      ? aadharFrtFile ?? widget.data['aadhar_card_front']
                       : aadharFrtFile),
               SizedBox(
                 height: Dim().d12,
@@ -306,7 +306,7 @@ class _kycpageState extends State<kycpage> {
               imageLayout(
                   'Back Side',
                   widget.data != null
-                      ? widget.data['aadhar_card_back']
+                      ? aadharBckFile ?? widget.data['aadhar_card_back']
                       : aadharBckFile),
               SizedBox(
                 height: Dim().d12,
@@ -417,8 +417,11 @@ class _kycpageState extends State<kycpage> {
               SizedBox(
                 height: Dim().d12,
               ),
-              imageLayout('Pan Card',
-                  widget.data != null ? widget.data['pan_card'] : imageFile),
+              imageLayout(
+                  'Pan Card',
+                  widget.data != null
+                      ? imageFile ?? widget.data['pan_card']
+                      : imageFile),
               SizedBox(
                 height: Dim().d20,
               ),

@@ -86,6 +86,7 @@ class userViewModel extends ChangeNotifier {
         });
     if (result['success'] == true) {
       setState(() {
+        rideDetails.clear();
         loading = false;
         result['data'] == null ? homeLoading = true : homeLoading = false;
         notifyListeners();

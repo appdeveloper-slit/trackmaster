@@ -329,6 +329,7 @@ class _completedridesState extends State<completedrides> {
                                   details: details,
                                 ),
                               );
+                              print(details);
                             },
                             child: Container(
                               margin:

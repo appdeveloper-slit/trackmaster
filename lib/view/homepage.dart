@@ -19,6 +19,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timelines/timelines.dart';
 import 'package:trackmaster/utils/bottomnavigation.dart';
@@ -80,7 +81,7 @@ void onStart(ServiceInstance service) async {
 
   Timer.periodic(const Duration(seconds: 5), (timer) async {
     checkPermission();
-    service.invoke('setAsBackground');
+    // service.invoke('setAsBackground');
     service.invoke('update');
   });
 }
@@ -106,7 +107,7 @@ class _HomeviewState extends State<Homeview> {
       iosConfiguration: IosConfiguration(),
       androidConfiguration: AndroidConfiguration(
         onStart: onStart,
-        isForegroundMode: true,
+        isForegroundMode: false,
         autoStart: true,
         autoStartOnBoot: true,
         initialNotificationTitle: 'TrackMaster',
@@ -232,6 +233,19 @@ class _HomeviewState extends State<Homeview> {
     'Drop Location:',
   ];
 
+  RefreshController _refreshController =
+      RefreshController(initialRefresh: false);
+  void _onRefresh() async {
+    // monitor network fetch
+    await Future.delayed(Duration(seconds: 1), () {
+      STM().checkInternet(context, widget).then((value) {
+        Provider.of<userViewModel>(context as BuildContext, listen: false)
+            .getData(ctx: ctx, setState: setState);
+      });
+    });
+    _refreshController.refreshCompleted();
+  }
+
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -259,399 +273,428 @@ class _HomeviewState extends State<Homeview> {
         surfaceTintColor: Colors.transparent,
       ),
       body: CustomerDetails == null
-          ? SizedBox(
-              height: MediaQuery.of(ctx).size.height,
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: Dim().d12),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Image.asset(
-                      'assets/group.png',
-                      fit: BoxFit.cover,
-                      width: Dim().d300,
-                    ),
-                    Text(
-                      "It looks like you don't have any ongoing rides at the moment. Please head to the 'Assigned Rides' page to start your next journey.",
-                      textAlign: TextAlign.center,
-                      style: Sty().mediumtext,
-                    )
-                  ],
+          ? SmartRefresher(
+              controller: _refreshController,
+              onRefresh: _onRefresh,
+              child: SizedBox(
+                height: MediaQuery.of(ctx).size.height / 1.3,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: Dim().d12),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.asset(
+                        'assets/group.png',
+                        fit: BoxFit.cover,
+                        width: Dim().d300,
+                      ),
+                      Text(
+                        "It looks like you don't have any ongoing rides at the moment. Please head to the 'Assigned Rides' page to start your next journey.",
+                        textAlign: TextAlign.center,
+                        style: Sty().mediumtext,
+                      )
+                    ],
+                  ),
                 ),
               ),
             )
-          : SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: Dim().d16,
+          : SmartRefresher(
+              controller: _refreshController,
+              onRefresh: _onRefresh,
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: Dim().d16,
+                      ),
+                      child: RichText(
+                        text: TextSpan(
+                          text: 'Hi,',
+                          style: Sty().mediumtext.copyWith(
+                                color: Clr().black1,
+                                fontWeight: FontWeight.w400,
+                              ),
+                          children: [
+                            TextSpan(
+                              text: ' $name',
+                              style: Sty().mediumtext.copyWith(
+                                    color: Clr().Primarycolor,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                            )
+                          ],
+                        ),
+                      ),
                     ),
-                    child: RichText(
-                      text: TextSpan(
-                        text: 'Hi,',
-                        style: Sty().mediumtext.copyWith(
-                              color: Clr().black1,
-                              fontWeight: FontWeight.w400,
-                            ),
+
+                    Container(
+                      margin:
+                          EdgeInsets.only(top: Dim().d16, bottom: Dim().d12),
+                      height: Dim().d44,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Clr().lightblue,
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: Dim().d16),
+                        child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Order ID: ${CustomerDetails['order_id']}',
+                                style: Sty().smalltext.copyWith(
+                                      color: Clr().royalblue,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                              ),
+                              Text(
+                                '${DateFormat('dd MMM yy').format(DateTime.parse('${CustomerDetails['ride_date']} ${CustomerDetails['ride_time']}'))} / ${DateFormat('hh:mm a').format(DateTime.parse('${CustomerDetails['ride_date']} ${CustomerDetails['ride_time']}'))}',
+                                style: Sty().microText.copyWith(
+                                      color: Clr().steelblue,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                              )
+                            ]),
+                      ),
+                    ),
+
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: Dim().d16,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          TextSpan(
-                            text: ' $name',
-                            style: Sty().mediumtext.copyWith(
-                                  color: Clr().Primarycolor,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  SvgPicture.asset(
+                                    svgList[0],
+                                    height: 18.0,
+                                    width: 18.0,
+                                    fit: BoxFit.cover,
+                                  ),
+                                  SizedBox(
+                                    width: Dim().d6,
+                                  ),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        nameFiled[0],
+                                        style: Sty().microText.copyWith(
+                                            color: Clr().slategrey,
+                                            fontWeight: FontWeight.w400),
+                                      ),
+                                      SizedBox(
+                                        height: Dim().d2,
+                                      ),
+                                      Text(
+                                        CustomerDetails['customer_name'],
+                                        style: Sty().microText.copyWith(
+                                              color: Clr().charcole,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                      )
+                                    ],
+                                  )
+                                ],
+                              ),
+                              SizedBox(
+                                height: Dim().d12,
+                              ),
+                              Row(
+                                children: [
+                                  SvgPicture.asset(
+                                    svgList[2],
+                                    height: 18.0,
+                                    width: 18.0,
+                                    fit: BoxFit.cover,
+                                  ),
+                                  SizedBox(
+                                    width: Dim().d6,
+                                  ),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        nameFiled[2],
+                                        style: Sty().microText.copyWith(
+                                            color: Clr().slategrey,
+                                            fontWeight: FontWeight.w400),
+                                      ),
+                                      SizedBox(
+                                        height: Dim().d2,
+                                      ),
+                                      Text(
+                                        CustomerDetails['car_model'],
+                                        style: Sty().microText.copyWith(
+                                              color: Clr().charcole,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                      )
+                                    ],
+                                  )
+                                ],
+                              )
+                            ],
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  SvgPicture.asset(
+                                    svgList[1],
+                                    height: 18.0,
+                                    width: 18.0,
+                                    fit: BoxFit.cover,
+                                  ),
+                                  SizedBox(
+                                    width: Dim().d6,
+                                  ),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        nameFiled[1],
+                                        style: Sty().microText.copyWith(
+                                            color: Clr().slategrey,
+                                            fontWeight: FontWeight.w400),
+                                      ),
+                                      SizedBox(
+                                        height: Dim().d2,
+                                      ),
+                                      Text(
+                                        CustomerDetails['customer_mobile'],
+                                        style: Sty().microText.copyWith(
+                                              color: Clr().charcole,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                      )
+                                    ],
+                                  )
+                                ],
+                              ),
+                              SizedBox(
+                                height: Dim().d12,
+                              ),
+                              Row(
+                                children: [
+                                  SvgPicture.asset(
+                                    svgList[3],
+                                    height: 18.0,
+                                    width: 18.0,
+                                    fit: BoxFit.cover,
+                                  ),
+                                  SizedBox(
+                                    width: Dim().d6,
+                                  ),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        nameFiled[3],
+                                        style: Sty().microText.copyWith(
+                                            color: Clr().slategrey,
+                                            fontWeight: FontWeight.w400),
+                                      ),
+                                      SizedBox(
+                                        height: Dim().d2,
+                                      ),
+                                      Text(
+                                        CustomerDetails['car_plate_number'],
+                                        style: Sty().microText.copyWith(
+                                              color: Clr().charcole,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                      )
+                                    ],
+                                  )
+                                ],
+                              )
+                            ],
                           )
                         ],
                       ),
                     ),
-                  ),
-
-                  Container(
-                    margin: EdgeInsets.only(top: Dim().d16, bottom: Dim().d12),
-                    height: Dim().d44,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Clr().lightblue,
+                    SizedBox(
+                      height: Dim().d20,
                     ),
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: Dim().d16),
-                      child: Row(
+                    Container(
+                      margin: EdgeInsets.symmetric(horizontal: Dim().d16),
+                      height: 48.0,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Clr().jordyblue, width: 1.0),
+                        borderRadius: BorderRadius.all(
+                          Radius.circular(Dim().d12),
+                        ),
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: Dim().d14),
+                        child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'Order ID: ${CustomerDetails['order_id']}',
+                              'Customer No.: ${CustomerDetails['customer_mobile']}',
                               style: Sty().smalltext.copyWith(
+                                    fontWeight: FontWeight.w400,
                                     color: Clr().royalblue,
-                                    fontWeight: FontWeight.w400,
                                   ),
                             ),
-                            Text(
-                              '${DateFormat('dd MMM yy').format(DateTime.parse('${CustomerDetails['ride_date']} ${CustomerDetails['ride_time']}'))} / ${DateFormat('hh:mm a').format(DateTime.parse('${CustomerDetails['ride_date']} ${CustomerDetails['ride_time']}'))}',
-                              style: Sty().microText.copyWith(
-                                    color: Clr().steelblue,
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                            )
-                          ]),
-                    ),
-                  ),
-
-                  Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: Dim().d16,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                SvgPicture.asset(
-                                  svgList[0],
-                                  height: 18.0,
-                                  width: 18.0,
-                                  fit: BoxFit.cover,
-                                ),
-                                SizedBox(
-                                  width: Dim().d6,
-                                ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      nameFiled[0],
-                                      style: Sty().microText.copyWith(
-                                          color: Clr().slategrey,
-                                          fontWeight: FontWeight.w400),
-                                    ),
-                                    SizedBox(
-                                      height: Dim().d2,
-                                    ),
-                                    Text(
-                                      CustomerDetails['customer_name'],
-                                      style: Sty().microText.copyWith(
-                                            color: Clr().charcole,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                    )
-                                  ],
-                                )
-                              ],
+                            InkWell(
+                              onTap: () {
+                                STM().openDialer(
+                                    CustomerDetails['customer_mobile']);
+                              },
+                              child: SvgPicture.asset(
+                                'assets/bluecall.svg',
+                                height: Dim().d32,
+                                width: Dim().d32,
+                                fit: BoxFit.cover,
+                              ),
                             ),
-                            SizedBox(
-                              height: Dim().d12,
-                            ),
-                            Row(
-                              children: [
-                                SvgPicture.asset(
-                                  svgList[2],
-                                  height: 18.0,
-                                  width: 18.0,
-                                  fit: BoxFit.cover,
-                                ),
-                                SizedBox(
-                                  width: Dim().d6,
-                                ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      nameFiled[2],
-                                      style: Sty().microText.copyWith(
-                                          color: Clr().slategrey,
-                                          fontWeight: FontWeight.w400),
-                                    ),
-                                    SizedBox(
-                                      height: Dim().d2,
-                                    ),
-                                    Text(
-                                      CustomerDetails['car_model'],
-                                      style: Sty().microText.copyWith(
-                                            color: Clr().charcole,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                    )
-                                  ],
-                                )
-                              ],
-                            )
                           ],
                         ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                SvgPicture.asset(
-                                  svgList[1],
-                                  height: 18.0,
-                                  width: 18.0,
-                                  fit: BoxFit.cover,
-                                ),
-                                SizedBox(
-                                  width: Dim().d6,
-                                ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      nameFiled[1],
-                                      style: Sty().microText.copyWith(
-                                          color: Clr().slategrey,
-                                          fontWeight: FontWeight.w400),
-                                    ),
-                                    SizedBox(
-                                      height: Dim().d2,
-                                    ),
-                                    Text(
-                                      CustomerDetails['customer_mobile'],
-                                      style: Sty().microText.copyWith(
-                                            color: Clr().charcole,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                    )
-                                  ],
-                                )
-                              ],
-                            ),
-                            SizedBox(
-                              height: Dim().d12,
-                            ),
-                            Row(
-                              children: [
-                                SvgPicture.asset(
-                                  svgList[3],
-                                  height: 18.0,
-                                  width: 18.0,
-                                  fit: BoxFit.cover,
-                                ),
-                                SizedBox(
-                                  width: Dim().d6,
-                                ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      nameFiled[3],
-                                      style: Sty().microText.copyWith(
-                                          color: Clr().slategrey,
-                                          fontWeight: FontWeight.w400),
-                                    ),
-                                    SizedBox(
-                                      height: Dim().d2,
-                                    ),
-                                    Text(
-                                      CustomerDetails['car_plate_number'],
-                                      style: Sty().microText.copyWith(
-                                            color: Clr().charcole,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                    )
-                                  ],
-                                )
-                              ],
-                            )
-                          ],
-                        )
-                      ],
-                    ),
-                  ),
-                  SizedBox(
-                    height: Dim().d20,
-                  ),
-                  Container(
-                    margin: EdgeInsets.symmetric(horizontal: Dim().d16),
-                    height: 48.0,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Clr().jordyblue, width: 1.0),
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(Dim().d12),
                       ),
                     ),
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: Dim().d14),
+                    SizedBox(
+                      height: Dim().d20,
+                    ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: Dim().d16),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            'Customer No.: ${CustomerDetails['customer_mobile']}',
-                            style: Sty().smalltext.copyWith(
-                                  fontWeight: FontWeight.w400,
-                                  color: Clr().royalblue,
-                                ),
-                          ),
-                          InkWell(
-                            onTap: () {
-                              STM().openDialer(
-                                  CustomerDetails['customer_mobile']);
-                            },
-                            child: SvgPicture.asset(
-                              'assets/bluecall.svg',
-                              height: Dim().d32,
-                              width: Dim().d32,
-                              fit: BoxFit.cover,
+                          RichText(
+                            text: TextSpan(
+                              text: 'Ride Status',
+                              style: Sty().mediumtext.copyWith(
+                                    color: Clr().royalblue,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                              children: [
+                                TextSpan(
+                                  text: ' (${CustomerDetails['ride_type']})',
+                                  style: Sty().mediumtext.copyWith(
+                                        color: Clr().royalblue,
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                )
+                              ],
                             ),
                           ),
+                          SizedBox(
+                            width: Dim().d12,
+                          ),
+                          Expanded(
+                            child: Divider(
+                              color: Clr().bordercolor,
+                              thickness: 1,
+                            ),
+                          )
                         ],
                       ),
                     ),
-                  ),
-                  SizedBox(
-                    height: Dim().d20,
-                  ),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: Dim().d16),
-                    child: Row(
-                      children: [
-                        RichText(
-                          text: TextSpan(
-                            text: 'Ride Status',
-                            style: Sty().mediumtext.copyWith(
-                                  color: Clr().royalblue,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                            children: [
-                              TextSpan(
-                                text: ' (${CustomerDetails['ride_type']})',
-                                style: Sty().mediumtext.copyWith(
-                                      color: Clr().royalblue,
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                              )
-                            ],
-                          ),
-                        ),
-                        SizedBox(
-                          width: Dim().d12,
-                        ),
-                        Expanded(
-                          child: Divider(
-                            color: Clr().bordercolor,
-                            thickness: 1,
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-                  ListView.builder(
-                    itemCount: ongoingRideList.length,
-                    shrinkWrap: true,
-                    controller: ScrollController(),
-                    itemBuilder: (context, index) {
-                      return Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Column(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: SvgPicture.asset(
-                                  'assets/location.svg',
-                                  color: index == 0
-                                      ? ongoingRideList[0]['date'] != null
-                                          ? Clr().iconcolor
-                                          : Clr().bttnColor
-                                      : ongoingRideList[index - 1]['date'] !=
-                                              null
-                                          ? Clr().iconcolor
-                                          : Clr().iconClr,
-                                  height: Dim().d20,
-                                ),
-                              ),
-                              index == ongoingRideList.length - 1
-                                  ? Container()
-                                  : Dash(
-                                      direction: Axis.vertical,
-                                      dashLength: 8.0,
-                                      dashGap: 2.0,
-                                      length: 160,
-                                      dashColor:
-                                          ongoingRideList[index]['date'] != null
-                                              ? Clr().iconcolor
-                                              : Clr().dashedclr,
-                                    ),
-                            ],
-                          ),
-                          Expanded(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                    ListView.builder(
+                      itemCount: ongoingRideList.length,
+                      shrinkWrap: true,
+                      controller: ScrollController(),
+                      itemBuilder: (context, index) {
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Column(
                               children: [
-                                SizedBox(
-                                  height: Dim().d8,
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: SvgPicture.asset(
+                                    'assets/location.svg',
+                                    color: index == 0
+                                        ? ongoingRideList[0]['date'] != null
+                                            ? Clr().iconcolor
+                                            : Clr().bttnColor
+                                        : ongoingRideList[index - 1]['date'] !=
+                                                null
+                                            ? Clr().iconcolor
+                                            : Clr().iconClr,
+                                    height: Dim().d20,
+                                  ),
                                 ),
-                                Text(
-                                  ongoingRideList[index]['location_type'],
-                                  style: Sty().smalltext.copyWith(
-                                        color: Clr().slategrey,
-                                        fontWeight: FontWeight.w400,
+                                index == ongoingRideList.length - 1
+                                    ? Container()
+                                    : Dash(
+                                        direction: Axis.vertical,
+                                        dashLength: 8.0,
+                                        dashGap: 2.0,
+                                        length: 160,
+                                        dashColor: ongoingRideList[index]
+                                                    ['date'] !=
+                                                null
+                                            ? Clr().iconcolor
+                                            : Clr().dashedclr,
                                       ),
-                                ),
-                                SizedBox(
-                                  height: Dim().d8,
-                                ),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          if (ongoingRideList[index]
-                                                  ['location'] !=
-                                              null)
+                              ],
+                            ),
+                            Expanded(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  SizedBox(
+                                    height: Dim().d8,
+                                  ),
+                                  Text(
+                                    ongoingRideList[index]['location_type'],
+                                    style: Sty().smalltext.copyWith(
+                                          color: Clr().slategrey,
+                                          fontWeight: FontWeight.w400,
+                                        ),
+                                  ),
+                                  SizedBox(
+                                    height: Dim().d8,
+                                  ),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            if (ongoingRideList[index]
+                                                    ['location'] !=
+                                                null)
+                                              Text(
+                                                ongoingRideList[index]
+                                                    ['location'],
+                                                maxLines: 3,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: Sty().smalltext.copyWith(
+                                                      color: Clr().charcole,
+                                                      fontWeight:
+                                                          FontWeight.w400,
+                                                    ),
+                                              ),
+                                            if (ongoingRideList[index]
+                                                    ['location'] !=
+                                                null)
+                                              SizedBox(
+                                                height: Dim().d12,
+                                              ),
                                             Text(
-                                              ongoingRideList[index]
-                                                  ['location'],
+                                              ongoingRideList[index]['address'],
                                               maxLines: 3,
                                               overflow: TextOverflow.ellipsis,
                                               style: Sty().smalltext.copyWith(
@@ -659,243 +702,226 @@ class _HomeviewState extends State<Homeview> {
                                                     fontWeight: FontWeight.w400,
                                                   ),
                                             ),
-                                          if (ongoingRideList[index]
-                                                  ['location'] !=
-                                              null)
-                                            SizedBox(
-                                              height: Dim().d12,
-                                            ),
-                                          Text(
-                                            ongoingRideList[index]['address'],
-                                            maxLines: 3,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: Sty().smalltext.copyWith(
-                                                  color: Clr().charcole,
-                                                  fontWeight: FontWeight.w400,
-                                                ),
-                                          ),
-                                        ],
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                    SizedBox(
-                                      width: Dim().d16,
-                                    ),
-                                    InkWell(
-                                        onTap: () {
-                                          STM().openMap(
-                                            double.parse(ongoingRideList[index]
-                                                ['latitude']),
-                                            double.parse(ongoingRideList[index]
-                                                ['longitude']),
-                                          );
-                                        },
-                                        child: SvgPicture.asset(
-                                            'assets/share.svg')),
-                                    SizedBox(
-                                      width: Dim().d16,
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(
-                                  height: Dim().d12,
-                                ),
-                                Align(
-                                  alignment: Alignment.centerRight,
-                                  child: ongoingRideList[index]['date'] != null
-                                      ? Container(
-                                          margin:
-                                              EdgeInsets.only(right: Dim().d16),
-                                          padding: EdgeInsets.symmetric(
-                                              horizontal: Dim().d20,
-                                              vertical: 10.0),
-                                          decoration: BoxDecoration(
-                                            border: Border.all(
-                                                color: Clr().ConborderClr,
-                                                width: 1.0),
-                                            borderRadius: BorderRadius.all(
-                                              Radius.circular(Dim().d12),
+                                      SizedBox(
+                                        width: Dim().d16,
+                                      ),
+                                      InkWell(
+                                          onTap: () {
+                                            STM().openMap(
+                                              double.parse(
+                                                  ongoingRideList[index]
+                                                      ['latitude']),
+                                              double.parse(
+                                                  ongoingRideList[index]
+                                                      ['longitude']),
+                                            );
+                                          },
+                                          child: SvgPicture.asset(
+                                              'assets/share.svg')),
+                                      SizedBox(
+                                        width: Dim().d16,
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(
+                                    height: Dim().d12,
+                                  ),
+                                  Align(
+                                    alignment: Alignment.centerRight,
+                                    child: ongoingRideList[index]['date'] !=
+                                            null
+                                        ? Container(
+                                            margin: EdgeInsets.only(
+                                                right: Dim().d16),
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: Dim().d20,
+                                                vertical: 10.0),
+                                            decoration: BoxDecoration(
+                                              border: Border.all(
+                                                  color: Clr().ConborderClr,
+                                                  width: 1.0),
+                                              borderRadius: BorderRadius.all(
+                                                Radius.circular(Dim().d12),
+                                              ),
                                             ),
-                                          ),
-                                          child: Text(
-                                            '${DateFormat('dd MMM yy').format(DateTime.parse('${ongoingRideList[index]['date']} ${ongoingRideList[index]['time']}'))} / ${DateFormat('hh:mm a').format(DateTime.parse('${ongoingRideList[index]['date']} ${ongoingRideList[index]['time']}'))}',
-                                            style: Sty().smalltext.copyWith(
-                                                  color: Clr().textClr,
-                                                  fontWeight: FontWeight.w400,
-                                                ),
-                                          ),
-                                        )
-                                      : usermodel.loading
-                                          ? ongoingRideList[index - 1]
-                                                      ['date'] !=
-                                                  null
-                                              ? Center(
-                                                  child:
-                                                      CircularProgressIndicator())
-                                              : Container()
-                                          : Padding(
-                                              padding: EdgeInsets.only(
-                                                  right: Dim().d16),
-                                              child: SizedBox(
-                                                width: Dim().d200,
-                                                child: ElevatedButton(
-                                                  onPressed: () {
-                                                    STM()
-                                                        .checkInternet(
-                                                            context, widget)
-                                                        .then((value) {
-                                                      if (value) {
-                                                        index == 0
-                                                            ? usermodel
-                                                                .updateStatus(
-                                                                ctx,
-                                                                setState,
-                                                                {
-                                                                  "ride_location_id":
-                                                                      ongoingRideList[
-                                                                              index]
+                                            child: Text(
+                                              '${DateFormat('dd MMM yy').format(DateTime.parse('${ongoingRideList[index]['date']} ${ongoingRideList[index]['time']}'))} / ${DateFormat('hh:mm a').format(DateTime.parse('${ongoingRideList[index]['date']} ${ongoingRideList[index]['time']}'))}',
+                                              style: Sty().smalltext.copyWith(
+                                                    color: Clr().textClr,
+                                                    fontWeight: FontWeight.w400,
+                                                  ),
+                                            ),
+                                          )
+                                        : usermodel.loading
+                                            ? ongoingRideList[index - 1]
+                                                        ['date'] !=
+                                                    null
+                                                ? Center(
+                                                    child:
+                                                        CircularProgressIndicator())
+                                                : Container()
+                                            : Padding(
+                                                padding: EdgeInsets.only(
+                                                    right: Dim().d16),
+                                                child: SizedBox(
+                                                  width: Dim().d200,
+                                                  child: ElevatedButton(
+                                                    onPressed: () {
+                                                      STM()
+                                                          .checkInternet(
+                                                              context, widget)
+                                                          .then((value) {
+                                                        if (value) {
+                                                          index == 0
+                                                              ? usermodel
+                                                                  .updateStatus(
+                                                                  ctx,
+                                                                  setState,
+                                                                  {
+                                                                    "ride_location_id":
+                                                                        ongoingRideList[index]
+                                                                            [
+                                                                            'id'],
+                                                                    "latitude":
+                                                                        ongoingRideList[index]
+                                                                            [
+                                                                            'latitude'],
+                                                                    "longitude":
+                                                                        ongoingRideList[index]
+                                                                            [
+                                                                            'longitude']
+                                                                  },
+                                                                )
+                                                              : ongoingRideList[index -
+                                                                              1]
                                                                           [
-                                                                          'id'],
-                                                                  "latitude": ongoingRideList[
-                                                                          index]
+                                                                          'date'] !=
+                                                                      null
+                                                                  ? usermodel
+                                                                      .updateStatus(
+                                                                      type: (ongoingRideList.length - 1) ==
+                                                                              index
+                                                                          ? 'last'
+                                                                          : null,
+                                                                      ctx,
+                                                                      setState,
+                                                                      {
+                                                                        "ride_location_id":
+                                                                            ongoingRideList[index]['id'],
+                                                                        "latitude":
+                                                                            ongoingRideList[index]['latitude'],
+                                                                        "longitude":
+                                                                            ongoingRideList[index]['longitude']
+                                                                      },
+                                                                    )
+                                                                  : null;
+                                                        }
+                                                      });
+                                                    },
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                      elevation: 0,
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                              vertical: 10.0),
+                                                      backgroundColor: index ==
+                                                              0
+                                                          ? Clr().bttnColor
+                                                          : ongoingRideList[
+                                                                          index -
+                                                                              1]
                                                                       [
-                                                                      'latitude'],
-                                                                  "longitude":
-                                                                      ongoingRideList[
-                                                                              index]
-                                                                          [
-                                                                          'longitude']
-                                                                },
-                                                              )
-                                                            : ongoingRideList[index -
-                                                                            1][
-                                                                        'date'] !=
-                                                                    null
-                                                                ? usermodel
-                                                                    .updateStatus(
-                                                                    type: (ongoingRideList.length -
-                                                                                1) ==
-                                                                            index
-                                                                        ? 'last'
-                                                                        : null,
-                                                                    ctx,
-                                                                    setState,
-                                                                    {
-                                                                      "ride_location_id":
-                                                                          ongoingRideList[index]
-                                                                              [
-                                                                              'id'],
-                                                                      "latitude":
-                                                                          ongoingRideList[index]
-                                                                              [
-                                                                              'latitude'],
-                                                                      "longitude":
-                                                                          ongoingRideList[index]
-                                                                              [
-                                                                              'longitude']
-                                                                    },
-                                                                  )
-                                                                : null;
-                                                      }
-                                                    });
-                                                  },
-                                                  style:
-                                                      ElevatedButton.styleFrom(
-                                                    elevation: 0,
-                                                    padding:
-                                                        EdgeInsets.symmetric(
-                                                            vertical: 10.0),
-                                                    backgroundColor: index == 0
-                                                        ? Clr().bttnColor
-                                                        : ongoingRideList[
-                                                                        index -
-                                                                            1]
-                                                                    ['date'] !=
-                                                                null
-                                                            ? Clr().bttnColor
-                                                            : Clr()
-                                                                .bttnColor
-                                                                .withOpacity(
-                                                                    0.3),
-                                                    shape:
-                                                        RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.all(
-                                                        Radius.circular(
-                                                            Dim().d12),
+                                                                      'date'] !=
+                                                                  null
+                                                              ? Clr().bttnColor
+                                                              : Clr()
+                                                                  .bttnColor
+                                                                  .withOpacity(
+                                                                      0.3),
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius.all(
+                                                          Radius.circular(
+                                                              Dim().d12),
+                                                        ),
                                                       ),
                                                     ),
-                                                  ),
-                                                  child: Text(
-                                                    ongoingRideList[index]
-                                                        ['ride_status'],
-                                                    style: Sty()
-                                                        .smalltext
-                                                        .copyWith(
-                                                          color: Colors.white,
-                                                          fontWeight:
-                                                              FontWeight.w600,
-                                                        ),
+                                                    child: Text(
+                                                      ongoingRideList[index]
+                                                          ['ride_status'],
+                                                      style: Sty()
+                                                          .smalltext
+                                                          .copyWith(
+                                                            color: Colors.white,
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                          ),
+                                                    ),
                                                   ),
                                                 ),
                                               ),
-                                            ),
-                                ),
-                                SizedBox(
-                                  height: Dim().d12,
-                                ),
-                                index == ongoingRideList.length - 1
-                                    ? Container()
-                                    : Padding(
-                                        padding:
-                                            EdgeInsets.only(right: Dim().d16),
-                                        child: Divider(
-                                          color: Clr().borderClr,
-                                        ),
-                                      )
-                              ],
-                            ),
-                          )
-                        ],
-                      );
-                    },
-                  ),
-                  SizedBox(
-                    height: Dim().d20,
-                  ),
-                  // _buildTimelineTile(
-                  //   icon: Icons.local_parking,
-                  //   iconColor: Colors.green,
-                  //   title: 'Parking Lot Location:',
-                  //   address:
-                  //       '1234, Shivaji Marg, Andheri West, Mumbai, Maharashtra, 400053, India',
-                  //   dateTime: '24th May 24 / 2:04 PM',
-                  //   buttonText: '',
-                  // ),
-                  // _buildTimelineTile(
-                  //   icon: Icons.location_on,
-                  //   iconColor: Colors.orange,
-                  //   title: 'Pickup Location:',
-                  //   address:
-                  //       '1234, Shivaji Marg, Andheri West, Mumbai, Maharashtra, 400053, India',
-                  //   buttonText: 'Start Ride',
-                  // ),
-                  // _buildTimelineTile(
-                  //   icon: Icons.location_on,
-                  //   iconColor: Colors.blueGrey,
-                  //   title: 'Drop Location:',
-                  //   address:
-                  //       '1234, Shivaji Marg, Andheri West, Mumbai, Maharashtra, 400053, India',
-                  //   buttonText: 'End Ride',
-                  // ),
-                  // // _buildTimelineTile(
-                  //   icon: Icons.location_on,
-                  //   iconColor: Colors.grey,
-                  //   title: 'Drop Location:',
-                  //   address:
-                  //       '1234, Shivaji Marg, Andheri West, Mumbai, Maharashtra, 400053, India',
-                  //   buttonText: 'Parked Vehicle',
-                  // ),
-                ],
+                                  ),
+                                  SizedBox(
+                                    height: Dim().d12,
+                                  ),
+                                  index == ongoingRideList.length - 1
+                                      ? Container()
+                                      : Padding(
+                                          padding:
+                                              EdgeInsets.only(right: Dim().d16),
+                                          child: Divider(
+                                            color: Clr().borderClr,
+                                          ),
+                                        )
+                                ],
+                              ),
+                            )
+                          ],
+                        );
+                      },
+                    ),
+                    SizedBox(
+                      height: Dim().d20,
+                    ),
+                    // _buildTimelineTile(
+                    //   icon: Icons.local_parking,
+                    //   iconColor: Colors.green,
+                    //   title: 'Parking Lot Location:',
+                    //   address:
+                    //       '1234, Shivaji Marg, Andheri West, Mumbai, Maharashtra, 400053, India',
+                    //   dateTime: '24th May 24 / 2:04 PM',
+                    //   buttonText: '',
+                    // ),
+                    // _buildTimelineTile(
+                    //   icon: Icons.location_on,
+                    //   iconColor: Colors.orange,
+                    //   title: 'Pickup Location:',
+                    //   address:
+                    //       '1234, Shivaji Marg, Andheri West, Mumbai, Maharashtra, 400053, India',
+                    //   buttonText: 'Start Ride',
+                    // ),
+                    // _buildTimelineTile(
+                    //   icon: Icons.location_on,
+                    //   iconColor: Colors.blueGrey,
+                    //   title: 'Drop Location:',
+                    //   address:
+                    //       '1234, Shivaji Marg, Andheri West, Mumbai, Maharashtra, 400053, India',
+                    //   buttonText: 'End Ride',
+                    // ),
+                    // // _buildTimelineTile(
+                    //   icon: Icons.location_on,
+                    //   iconColor: Colors.grey,
+                    //   title: 'Drop Location:',
+                    //   address:
+                    //       '1234, Shivaji Marg, Andheri West, Mumbai, Maharashtra, 400053, India',
+                    //   buttonText: 'Parked Vehicle',
+                    // ),
+                  ],
+                ),
               ),
             ),
     );

@@ -439,13 +439,47 @@ class _accountPageState extends State<accountPage> {
                       style: ElevatedButton.styleFrom(
                           backgroundColor: Clr().Primarycolor,
                           padding: EdgeInsets.symmetric(vertical: Dim().d12)),
-                      onPressed: () async {
-                        SharedPreferences sp =
-                            await SharedPreferences.getInstance();
-                        setState(() {
-                          sp.clear();
-                          STM().finishAffinity(context, const Login());
-                        });
+                      onPressed: () {
+                        showDialog(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                backgroundColor: Colors.white,
+                                elevation: 0,
+                                title: Text('Logout Account',
+                                    style: Sty().mediumtext),
+                                content: Text(
+                                    'Are you sure want to logout account?',
+                                    style: Sty().smalltext),
+                                actions: [
+                                  TextButton(
+                                      onPressed: () async {
+                                        // prfileApis().deleteacc(ctx, setState);
+                                        setState(() {
+                                          service.invoke('stopService');
+                                        });
+                                        SharedPreferences sp =
+                                            await SharedPreferences
+                                                .getInstance();
+                                        setState(() {
+                                          sp.clear();
+                                          STM().finishAffinity(
+                                              context, const Login());
+                                        });
+                                      },
+                                      child: Text('Yes',
+                                          style: Sty().smalltext.copyWith(
+                                              fontWeight: FontWeight.w600))),
+                                  TextButton(
+                                      onPressed: () {
+                                        STM().back2Previous(ctx);
+                                      },
+                                      child: Text('No',
+                                          style: Sty().smalltext.copyWith(
+                                              fontWeight: FontWeight.w600))),
+                                ],
+                              );
+                            });
                       },
                       child: Center(
                         child: Text(
